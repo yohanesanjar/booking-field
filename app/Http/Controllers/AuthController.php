@@ -30,9 +30,9 @@ class AuthController extends Controller
 
         if(Auth::attempt($credentials)){
             if(Auth::user()->role->name == 'owner') {
-                return redirect()->route('admin.layouts.dashboard');
+                return redirect()->route('owner.dashboard');
             } else if(Auth::user()->role->name == 'advisor') {
-                return redirect()->route('admin.layouts.dashboard');
+                return redirect()->route('advisor.dashboard');
             } else if(Auth::user()->role->name == 'user') {
                 return redirect()->route('welcome');
             }
