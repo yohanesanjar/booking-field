@@ -57,7 +57,7 @@
                 <div id="collapseLapangan" class="collapse" aria-labelledby="headingLapangan"
                     data-bs-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{{ route('owner.field') }}">Lapangan</a>
+                        <a class="collapse-item" href="{{ route('owner.fieldIndex') }}">Lapangan</a>
                         <a class="collapse-item" href="#">Jadwal Lapangan</a>
                     </div>
                 </div>
