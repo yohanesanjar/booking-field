@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Jenis Lapangan</h1>
+        <h1 class="h3 mb-0 text-gray-800">Pilih Lapangan</h1>
     </div>
     @if (session('success'))
         <div class="alert alert-success d-flex justify-content-between align-items-center">
@@ -10,9 +10,6 @@
             <button type="button" class="btn-close flex-end" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
-    <div class="py-3">
-        <a href="{{ route('owner.fieldCreate') }}" class="btn btn-primary">Tambah</a>
-    </div>
     <!-- Content Row -->
     <div class="row">
 
@@ -22,17 +19,22 @@
                 <thead>
                     <tr>
                         <th class="text-center">#</th>
-                        <th class="text-center">Aksi</th>
-                        <th class="text-center">Thumbnail</th>
-                        <th class="text-center">Nama</th>
+                        <th class="text-center">Nama Lapangan</th>
                         <th class="text-center">Jenis Lapangan</th>
+                        <th class="text-center">Jenis Material</th>
                         <th class="text-center">Harga</th>
+                        <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($fieldData as $data)
+                    @foreach ($fieldDatas as $data)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
+                            
+                            <td>{{ $data->name }}</td>
+                            <td>{{ $data->field_type }}</td>
+                            <td>{{ $data->field_material }}</td>
+                            <td>Rp {{ number_format($data->price, 0, ',', '.') }}</td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-1">
                                     <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal"
@@ -104,55 +106,14 @@
                                         </div>
                                     </div>
 
-                                    <a href="{{ route('owner.fieldEdit', $data->id) }}" data-bs-toggle="tooltip"
-                                        data-bs-placement="top" data-bs-title="Edit" class="btn btn-sm btn-warning"><i
-                                            class="fa fa-edit"></i>
+                                    <a href="{{ route('owner.bookingCreate', $data->id) }}" data-bs-toggle="tooltip"
+                                        data-bs-placement="top" data-bs-title="Edit" class="btn btn-sm btn-warning">pilih</i>
                                     </a>
-
-                                    <form class="deleteForm" action="{{ route('owner.fieldDelete', $data->id) }}"
-                                        method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete"
-                                            type="button" class="btn btn-sm btn-danger deleteButton">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
-                                    </form>
                                 </div>
                             </td>
-                            <td><img src="{{ asset('storage/' . $data->thumbnail) }}" style="width: 100px"
-                                    alt="{{ $data->thumbnail }}"></td>
-                            <td>{{ $data->name }}</td>
-                            <td>{{ $data->field_type }}</td>
-                            <td>Rp {{ number_format($data->price, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
-    @endsection
-    @section('script')
-        <script>
-            var deleteButtons = document.querySelectorAll('.deleteButton');
-
-            deleteButtons.forEach(function(button) {
-                button.addEventListener('click', function() {
-                    var form = this.closest('.deleteForm');
-
-                    Swal.fire({
-                        title: 'Hapus Request',
-                        text: "Apakah Anda Yakin Untuk Menghapus?",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Ya'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
-                });
-            });
-        </script>
     @endsection

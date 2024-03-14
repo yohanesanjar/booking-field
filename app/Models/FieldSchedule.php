@@ -5,15 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class FieldData extends Model
+class FieldSchedule extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['id']; // $guarded
+    protected $guarded = ['id'];
 
-    public function bookings()
+    public function bookingDetails()
     {
-        return $this->hasMany(Booking::class);
+        return $this->hasMany(BookingDetail::class);
     }
 
     public function scheduleAvailabilities()

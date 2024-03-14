@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\FieldData;
+use App\Models\FieldSchedule;
 use Illuminate\Http\Request;
 
 class FieldsController extends Controller
@@ -10,10 +11,10 @@ class FieldsController extends Controller
     public function indexField()
     {
         $user = auth()->user();
-        if($user->role_id == 1){
+        if ($user->role_id == 1) {
             $fieldData = FieldData::all();
             return view('admin.owner.fields.data.index', compact('fieldData'));
-        } else if($user->role_id == 2){
+        } else if ($user->role_id == 2) {
             return view('admin.advisor.fields.data.index');
         }
     }
@@ -68,73 +69,104 @@ class FieldsController extends Controller
     {
         $user = auth()->user();
         $fieldData = FieldData::find($id);
-        if($user->role_id == 1){
+        if ($user->role_id == 1) {
             return view('admin.owner.fields.data.edit', compact('fieldData'));
-        } else if($user->role_id == 2){
+        } else if ($user->role_id == 2) {
             return view('admin.advisor.fields.data.edit', compact('fieldData'));
         }
     }
 
     public function updateField(Request $request, $id)
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
 
-    try {
-        $request->validate([
-            'name' => 'required',
-            'description' => 'required',
-            'field_type' => 'required',
-            'field_material' => 'required',
-            'field_location' => 'required',
-            'price' => 'required',
-            'thumbnail' => 'image|mimes:jpeg,png,jpg,gif', // Allow empty or image files
-        ]);
+        try {
+            $request->validate([
+                'name' => 'required',
+                'description' => 'required',
+                'field_type' => 'required',
+                'field_material' => 'required',
+                'field_location' => 'required',
+                'price' => 'required',
+                'thumbnail' => 'image|mimes:jpeg,png,jpg,gif', // Allow empty or image files
+            ]);
 
-        $fieldData = FieldData::find($id);
+            $fieldData = FieldData::find($id);
 
-        // Update only if a new thumbnail is provided
-        if ($request->hasFile('thumbnail')) {
-            $thumbnailPath = $request->file('thumbnail')->store('thumbnails', 'public');
-            $fieldData->thumbnail = $thumbnailPath;
+            // Update only if a new thumbnail is provided
+            if ($request->hasFile('thumbnail')) {
+                $thumbnailPath = $request->file('thumbnail')->store('thumbnails', 'public');
+                $fieldData->thumbnail = $thumbnailPath;
+            }
+
+            $fieldData->update([
+                'name' => $request->name,
+                'description' => $request->description,
+                'field_type' => $request->field_type,
+                'field_material' => $request->field_material,
+                'field_location' => $request->field_location,
+                'price' => $request->price,
+            ]);
+
+            if ($user->role_id == 1) {
+                session()->flash('success', 'Data lapangan berhasil diubah');
+                return redirect()->route('owner.fieldIndex');
+            } else if ($user->role_id == 2) {
+                session()->flash('success', 'Data lapangan berhasil diubah');
+                return redirect()->route('advisor.field');
+            }
+        } catch (\Exception $e) {
+            // Handle the exception, e.g., log the error
+            session()->flash('error', 'Tidak bisa mengubah data. Tolong coba lagi.');
+            return redirect()->back()->withInput()->withErrors(['error_message' => 'Tidak bisa mengubah data. Tolong coba lagi.']);
         }
-
-        $fieldData->update([
-            'name' => $request->name,
-            'description' => $request->description,
-            'field_type' => $request->field_type,
-            'field_material' => $request->field_material,
-            'field_location' => $request->field_location,
-            'price' => $request->price,
-        ]);
-
-        if ($user->role_id == 1) {
-            session()->flash('success', 'Data lapangan berhasil diubah');
-            return redirect()->route('owner.fieldIndex');
-        } else if ($user->role_id == 2) {
-            session()->flash('success', 'Data lapangan berhasil diubah');
-            return redirect()->route('advisor.field');
-        }
-    } catch (\Exception $e) {
-        // Handle the exception, e.g., log the error
-        session()->flash('error', 'Tidak bisa mengubah data. Tolong coba lagi.');
-        return redirect()->back()->withInput()->withErrors(['error_message' => 'Tidak bisa mengubah data. Tolong coba lagi.']);
     }
-}
 
 
     public function destroyField($id)
     {
         $user = auth()->user();
         $fieldData = FieldData::find($id);
-        if($user->role_id == 1){
+        if ($user->role_id == 1) {
             $fieldData->delete();
             session()->flash('success', 'Data lapangan berhasil dihapus');
             return redirect()->route('owner.fieldIndex');
-        } else if($user->role_id == 2){
+        } else if ($user->role_id == 2) {
             $fieldData->delete();
             session()->flash('success', 'Data lapangan berhasil dihapus');
             return redirect()->route('advisor.field');
         }
     }
 
+    // Field Schedule
+    public function indexSchedule()
+    {
+        $user = auth()->user();
+        if ($user->role_id == 1) {
+            $fieldSchedule = FieldSchedule::all();
+            return view('admin.owner.fields.schedule.index', compact('fieldSchedule'));
+        } else if ($user->role_id == 2) {
+            return view('admin.advisor.fields.schedule.index');
+        }
+    }
+
+    public function updateSchedule(Request $request, $id)
+    {
+        $user = auth()->user();
+        $fieldSchedule = FieldSchedule::find($id);
+
+        // Menggunakan operasi ternary untuk menetapkan nilai is_active sesuai dengan checkbox
+        $isActive = $request->has('is_active') ? 1 : 0;
+
+        if ($user->role_id == 1) {
+            $fieldSchedule->update([
+                'is_active' => $isActive,
+            ]);
+            session()->flash('success', 'Jadwal lapangan berhasil diubah');
+            return redirect()->route('owner.scheduleIndex');
+        } else if ($user->role_id == 2) {
+            session()->flash('success', 'Jadwal lapangan berhasil diubah');
+            return redirect()->route('advisor.schedule');
+        }
+    }
 }

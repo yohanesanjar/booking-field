@@ -14,8 +14,8 @@
             <hr class="sidebar-divider my-0">
 
             <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
-                <a class="nav-link" href="#">
+            <li class="nav-item {{ request()->routeIs('owner.dashboard') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('owner.dashboard') }}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a>
             </li>
@@ -44,12 +44,13 @@
                     </div>
                 </div>
             </li>
-            
+
 
             <!-- Nav Item - Lapangan Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLapangan"
-                    aria-expanded="true" aria-controls="collapseLapangan">
+            <li
+                class="nav-item {{ request()->routeIs('owner.fieldIndex') || request()->routeIs('owner.scheduleIndex') ? 'active' : '' }}">
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
+                    data-bs-target="#collapseLapangan" aria-expanded="true" aria-controls="collapseLapangan">
                     <i class="fas fa-fw fa-wrench"></i>
                     <span>Data Lapangan</span>
                     <i class="bi bi-caret-down-fill"></i>
@@ -57,14 +58,20 @@
                 <div id="collapseLapangan" class="collapse" aria-labelledby="headingLapangan"
                     data-bs-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{{ route('owner.fieldIndex') }}">Lapangan</a>
-                        <a class="collapse-item" href="#">Jadwal Lapangan</a>
+                        <a class="collapse-item {{ request()->routeIs('owner.fieldIndex') ? 'active' : '' }}" href="{{ route('owner.fieldIndex') }}">Lapangan</a>
+                        <a class="collapse-item {{ request()->routeIs('owner.scheduleIndex') ? 'active' : '' }}" href="{{ route('owner.scheduleIndex') }}">Jadwal Lapangan</a>
                     </div>
                 </div>
             </li>
-            
-            
 
+            <li
+                class="nav-item">
+                <a class="nav-link" href="{{ route('owner.bookingIndex') }}">
+                    <i class="fas fa-fw fa-wrench"></i>
+                    <span>Data Booking</span>
+                </a>
+            </li>
+            
             {{-- <!-- Divider -->
         <hr class="sidebar-divider"> --}}
 
