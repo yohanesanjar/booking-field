@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Jenis Lapangan</h1>
+        <h1 class="h3 mb-0 text-gray-800">Data Lapangan</h1>
     </div>
     @if (session('success'))
         <div class="alert alert-success d-flex justify-content-between align-items-center">
@@ -21,18 +21,22 @@
             <table class="table table-hover text-nowrap" id="myTable" style="width: 100%">
                 <thead>
                     <tr>
-                        <th class="text-center">#</th>
-                        <th class="text-center">Aksi</th>
-                        <th class="text-center">Thumbnail</th>
-                        <th class="text-center">Nama</th>
-                        <th class="text-center">Jenis Lapangan</th>
-                        <th class="text-center">Harga</th>
+                        <th class="text-center align-middle" rowspan="2">#</th>
+                        <th class="text-center align-middle" rowspan="2">Aksi</th>
+                        <th class="text-center align-middle" rowspan="2">Thumbnail</th>
+                        <th class="text-center align-middle" rowspan="2">Nama</th>
+                        <th class="text-center align-middle" rowspan="2">Jenis Lapangan</th>
+                        <th class="text-center align-middle" colspan="2">Harga</th>
+                    </tr>
+                    <tr>
+                        <th class="text-center">Jam Pagi</th>
+                        <th class="text-center">Jam Malam</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($fieldData as $data)
                         <tr>
-                            <td>{{ $loop->iteration }}</td>
+                            <td class="text-center">{{ $loop->iteration }}</td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-1">
                                     <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal"
@@ -88,8 +92,14 @@
                                                     </div>
                                                     <div class="row mb-2">
                                                         <div class="col text-start">
-                                                            <label for="message-text" class="col-label">Harga:</label>
-                                                            <p>Rp. {{ number_format($data->price, 0, ',', '.') }}</p>
+                                                            <label for="message-text" class="col-label">Harga Jam Pagi:</label>
+                                                            <p>Rp. {{ number_format($data->morning_price, 0, ',', '.') }}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-2">
+                                                        <div class="col text-start">
+                                                            <label for="message-text" class="col-label">Harga Jam Malam:</label>
+                                                            <p>Rp. {{ number_format($data->night_price, 0, ',', '.') }}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -120,11 +130,12 @@
                                     </form>
                                 </div>
                             </td>
-                            <td><img src="{{ asset('storage/' . $data->thumbnail) }}" style="width: 100px"
+                            <td class="text-center"><img src="{{ asset('storage/' . $data->thumbnail) }}" style="width: 100px"
                                     alt="{{ $data->thumbnail }}"></td>
-                            <td>{{ $data->name }}</td>
-                            <td>{{ $data->field_type }}</td>
-                            <td>Rp {{ number_format($data->price, 0, ',', '.') }}</td>
+                            <td class="text-center">{{ $data->name }}</td>
+                            <td class="text-center">{{ $data->field_type }}</td>
+                            <td class="text-center">Rp {{ number_format($data->morning_price, 0, ',', '.') }}</td>
+                            <td class="text-center">Rp {{ number_format($data->night_price, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>

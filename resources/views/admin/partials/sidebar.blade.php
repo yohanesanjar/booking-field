@@ -60,6 +60,7 @@
                     <div class="bg-white py-2 collapse-inner rounded">
                         <a class="collapse-item {{ request()->routeIs('owner.fieldIndex') ? 'active' : '' }}" href="{{ route('owner.fieldIndex') }}">Lapangan</a>
                         <a class="collapse-item {{ request()->routeIs('owner.scheduleIndex') ? 'active' : '' }}" href="{{ route('owner.scheduleIndex') }}">Jadwal Lapangan</a>
+                        <a class="collapse-item {{ request()->routeIs('owner.scheduleActiveIndex') ? 'active' : '' }}" href="{{ route('owner.scheduleActiveIndex') }}">Jadwal Ketersediaan</a>
                     </div>
                 </div>
             </li>

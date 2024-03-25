@@ -12,9 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('bookings', function (Blueprint $table) {
-            $table->id();
+            $table->string('id')->primary();
             $table->foreignId('field_data_id');
-            $table->decimal('total_subtotal')->nullable();
+            $table->string('customer_name');
+            $table->boolean('is_member')->default(false);
+            $table->decimal('discount', 10, 2)->default(0);
+            $table->decimal('total_subtotal', 10, 2)->nullable();
+            $table->decimal('down_payment', 10, 2)->default(0);
+            $table->boolean('booking_status')->default(false);
             $table->timestamps();
         });
     }

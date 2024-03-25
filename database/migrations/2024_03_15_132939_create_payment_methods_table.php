@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('field_schedules', function (Blueprint $table) {
+        Schema::create('payment_methods', function (Blueprint $table) {
             $table->id();
-            $table->time('start_time');
-            $table->time('end_time');
-            $table->boolean('is_active')->default(true);
+            $table->string('name');
+            $table->string('account_number')->nullable();
+            $table->string('account_name')->nullable();
         });
     }
 
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('field_schedules');
+        Schema::dropIfExists('payment_methods');
     }
 };

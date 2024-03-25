@@ -88,15 +88,31 @@
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
+                    </div>
+                    <div class="row justify-content-between">
                         <div class="form-group col-sm-3 flex-column d-flex">
-                            <label class="form-control-label">Harga<span class="text-danger"> *</span></label>
+                            <label class="form-control-label">Harga Jam Pagi<span class="text-danger"> *</span></label>
                             <div class="input-group">
                                 <span class="input-group-text">Rp</span>
-                                <input type="text" id="price"
-                                    value="{{ number_format($fieldData->price, 0, ',', '.') }}" name="price"
+                                <input type="number" id="morning_price"
+                                    value="{{ number_format($fieldData->morning_price, 0, ',', '.') }}" name="morning_price"
                                     class="form-control" placeholder="Masukkan Harga" oninput="formatCurrency(this)">
                             </div>
-                            @error('price')
+                            @error('morning_price')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="row justify-content-between">
+                        <div class="form-group col-sm-3 flex-column d-flex">
+                            <label class="form-control-label">Harga Jam Malam<span class="text-danger"> *</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input type="number" id="night_price"
+                                    value="{{ number_format($fieldData->night_price, 0, ',', '.') }}" name="night_price"
+                                    class="form-control" placeholder="Masukkan Harga" oninput="formatCurrency(this)">
+                            </div>
+                            @error('night_price')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
@@ -124,7 +140,7 @@
                         </div>
                         <div class="form-group col-sm-2">
                             <button type="submit" class="btn btn-primary btn-block">Update</button>
-                        </div>                        
+                        </div>
                     </div>
                 </form>
             </div>
@@ -148,8 +164,10 @@
 
         // Remove formatting before submitting the form
         function removeFormattingBeforeSubmit(form) {
-            let priceInput = form.elements['price'];
+            let priceInput = form.elements['morning_price'];
+            let priceInput2 = form.elements['night_price'];
             priceInput.value = priceInput.value.replace(/[^0-9]/g, '');
+            priceInput2.value = priceInput2.value.replace(/[^0-9]/g, '');
         }
     </script>
 

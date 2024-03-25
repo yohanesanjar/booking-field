@@ -21,5 +21,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ScheduleSeeder::class,
         ]);
+        $this->call([
+            FieldDataSeeder::class,
+        ]);
+        $this->call([
+            PaymentMethodSeeder::class,
+        ]);
     }
 }

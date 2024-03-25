@@ -20,7 +20,7 @@
                         <div class="form-group col-12 flex-column d-flex">
                             <label class="form-control-label">Nama Lapangan<span class="text-danger"> *</span>
                             </label>
-                            <input type="text" id="name" name="name" placeholder="Masukkan Nama Lapangan">
+                            <input type="text" id="name" name="name" value="{{ old('name') }}" placeholder="Masukkan Nama Lapangan">
                             @error('name')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
@@ -31,7 +31,7 @@
                             <label class="form-control-label">Deskripsi Lapangan<span class="text-danger"> *</span>
                             </label>
                             <textarea class="form-control" placeholder="Masukkan Deskripsi Lapangan" id="floatingTextarea2" name="description"
-                                style="height: 100px"></textarea>
+                                style="height: 100px">{{ old('description') }}</textarea>
                             @error('description')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
@@ -75,17 +75,31 @@
                             @error('field_location')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
-                        </div>
+                        </div>                                             
+                    </div>
+                    <div class="row justify-content-between">
                         <div class="form-group col-sm-3 flex-column d-flex">
-                            <label class="form-control-label">Harga<span class="text-danger"> *</span></label>
+                            <label class="form-control-label">Harga Jam Pagi<span class="text-danger"> *</span></label>
                             <div class="input-group">
                                 <span class="input-group-text">Rp</span>
-                                <input type="text" id="price" name="price" class="form-control" placeholder="Masukkan Harga" oninput="formatCurrency(this)">
+                                <input type="number" id="morning_price" name="morning_price" class="form-control" value="{{ old('morning_price') }}" placeholder="Masukkan Harga" oninput="formatCurrency(this)">
                             </div>
-                            @error('price')
+                            @error('morning_price')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
-                        </div>                        
+                        </div>
+                    </div>
+                    <div class="row justify-content-between">
+                        <div class="form-group col-sm-3 flex-column d-flex">
+                            <label class="form-control-label">Harga Jam Malam<span class="text-danger"> *</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input type="number" id="night_price" name="night_price" value="{{ old('night_price') }}" class="form-control" placeholder="Masukkan Harga" oninput="formatCurrency(this)">
+                            </div>
+                            @error('night_price')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>   
                     </div>
                     <div class="row justify-content-between text-left">
                         <div class="form-group col-12 flex-column d-flex">
@@ -124,8 +138,10 @@
     
         // Remove formatting before submitting the form
         function removeFormattingBeforeSubmit(form) {
-            let priceInput = form.elements['price'];
+            let priceInput = form.elements['morning_price'];
+            let priceInput2 = form.elements['night_price'];
             priceInput.value = priceInput.value.replace(/[^0-9]/g, '');
+            priceInput2.value = priceInput2.value.replace(/[^0-9]/g, '');
         }
     </script>        
 @endsection

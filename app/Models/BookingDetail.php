@@ -11,6 +11,10 @@ class BookingDetail extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'booking_id' => 'string'
+    ];
+
     public function booking()
     {
         return $this->belongsTo(Booking::class, 'booking_id');

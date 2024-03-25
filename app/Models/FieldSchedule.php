@@ -11,6 +11,8 @@ class FieldSchedule extends Model
 
     protected $guarded = ['id'];
 
+    public $timestamps = false;
+
     public function bookingDetails()
     {
         return $this->hasMany(BookingDetail::class);

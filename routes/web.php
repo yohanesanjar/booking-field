@@ -34,14 +34,21 @@ Route::middleware(['auth', 'inactivityTimeout:1800'])->group(function () {
 
         // Field Schedule
         Route::get('/field/schedule', [FieldsController::class, 'indexSchedule'])->name('owner.scheduleIndex');
+        Route::get('/field/schedule-active', [FieldsController::class, 'indexScheduleActive'])->name('owner.scheduleActiveIndex');
         Route::put('/field/schedule/update/{id}', [FieldsController::class, 'updateSchedule'])->name('owner.scheduleUpdate');
+        Route::delete('/field/schedule/delete', [FieldsController::class, 'destroyScheduleActive'])->name('owner.scheduleActiveDelete');
 
         // Booking
         Route::get('/booking', [BookingController::class, 'index'])->name('owner.bookingIndex');
         Route::get('/booking/choose-field', [BookingController::class, 'chooseField'])->name('owner.chooseField');
         Route::get('/booking/choose-field/{id}', [BookingController::class, 'create'])->name('owner.bookingCreate');
-        Route::get('/filter/{id}', [BookingController::class, 'checkAvailability'])->name('dateFilter');
-        Route::post('/booking/store', [BookingController::class, 'store'])->name('owner.bookingStore');
+        Route::get('/filter', [BookingController::class, 'checkAvailability'])->name('check.availability');
+        Route::post('/booking/get-session', [BookingController::class, 'getSession'])->name('owner.getSession');
+
+        // Transaction
+        Route::get('/transaction', [BookingController::class, 'transaction'])->name('owner.transaction');
+        Route::get('/transaction/{id}', [BookingController::class, 'paymentTransaction'])->name('owner.paymentTransaction');
+        Route::post('/transaction/store', [BookingController::class, 'storeTransaction'])->name('owner.storeTransaction');
     });
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 });

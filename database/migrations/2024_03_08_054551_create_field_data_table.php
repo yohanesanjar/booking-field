@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('field_type');
             $table->string('field_material');
             $table->string('field_location');
-            $table->decimal('price');
+            $table->decimal('morning_price');
+            $table->decimal('night_price');
             $table->string('thumbnail');
             $table->timestamps();
         });

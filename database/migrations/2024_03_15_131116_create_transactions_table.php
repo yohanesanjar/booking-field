@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('schedule_availabilities', function (Blueprint $table) {
-            $table->id();
+        Schema::create('transactions', function (Blueprint $table) {
+            $table->string('id')->primary();
             $table->string('booking_id');
-            $table->date('schedule_date');
-            $table->foreignId('field_data_id');
-            $table->foreignId('field_schedule_id');
-            $table->boolean('is_available');
+            $table->foreignId('user_id');
+            $table->foreignId('payment_method_id');
+            $table->string('account_name')->nullable();
+            $table->string('payment_proof')->nullable();
             $table->timestamps();
             $table->foreign('booking_id')->references('id')->on('bookings')->onDelete('cascade');
         });
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('schedule_availabilities');
+        Schema::dropIfExists('transactions');
     }
 };
