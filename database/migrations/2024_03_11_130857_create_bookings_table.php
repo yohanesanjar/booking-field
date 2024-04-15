@@ -18,8 +18,7 @@ return new class extends Migration
             $table->boolean('is_member')->default(false);
             $table->decimal('discount', 10, 2)->default(0);
             $table->decimal('total_subtotal', 10, 2)->nullable();
-            $table->decimal('down_payment', 10, 2)->default(0);
-            $table->boolean('booking_status')->default(false);
+            $table->integer('booking_status')->default(-1);
             $table->timestamps();
         });
     }

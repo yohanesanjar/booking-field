@@ -12,34 +12,64 @@ use App\Models\PaymentMethod;
 use App\Models\ScheduleAvailability;
 use App\Models\Transaction;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Schema;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ConfirmationBooking;
 
 class BookingController extends Controller
 {
     public function index()
     {
-        $bookings = Booking::with('bookingDetails', 'fieldData', 'transactions.paymentMethod')->get();
-        return view('admin.owner.booking.index', compact('bookings'));
+        $bookings = Booking::with('bookingDetails', 'fieldData', 'transactions.paymentMethodDP')
+            ->orderBy('id', 'desc')
+            ->latest() // Jika id adalah timestamp Unix, Anda bisa menggunakan metode latest()
+            ->get();
+        $paymentMethods = PaymentMethod::all();
+
+        return view('admin.owner.booking.index', compact('bookings', 'paymentMethods'));
     }
 
     public function chooseField()
     {
-        $fieldDatas = FieldData::all();
-        return view('admin.owner.booking.chooseField', compact('fieldDatas'));
+        $user = auth()->user();
+        if ($user->role_id == 1) {
+            $fieldDatas = FieldData::all();
+            return view('admin.owner.booking.chooseField', compact('fieldDatas'));
+        } elseif ($user->role_id == 3) {
+            $fieldDatas = FieldData::paginate(6);
+            return view('user.booking.chooseField', compact('fieldDatas'));
+        }
+    }
+
+    public function search(Request $request)
+    {
+        $search = $request->search;
+        $fieldDatas = FieldData::where('field_type', 'like', '%' . $search . '%')->paginate(6);
+        return view('user.booking.chooseField', compact('fieldDatas'));
     }
 
     public function create($id, Request $request)
     {
+        $user = auth()->user();
         $fieldData = FieldData::find($id);
+
+        if (!$fieldData) {
+            return view('admin.owner.404');
+        }
+
         $schedule_play = Carbon::now()->format('Y-m-d');
         $fieldSchedules = FieldSchedule::with(['scheduleAvailabilities' => function ($query) use ($fieldData, $schedule_play) {
             $query->where('field_data_id', $fieldData->id)
                 ->where('schedule_date', $schedule_play);
         }])->get();
 
-        $paymentMethods = PaymentMethod::all();
-
-        return view('admin.owner.booking.create', compact('fieldData', 'fieldSchedules', 'schedule_play', 'paymentMethods'));
+        if ($user->role_id == 1) {
+            return view('admin.owner.booking.create', compact('fieldData', 'fieldSchedules', 'schedule_play'));
+        } elseif ($user->role_id == 3) {
+            return view('user.booking.create', compact('fieldData', 'fieldSchedules', 'schedule_play'));
+        }
     }
 
     public function checkAvailability(Request $request)
@@ -95,7 +125,6 @@ class BookingController extends Controller
             'customer_name' => $request->customer_name,
             'is_member' => $isMember,
             'discount' => $isMember ? 85000 : 0,
-            'booking_status' => false,
             'selected_schedules' => [],
             'total_before_discount' => 0,
             'total_after_discount' => 0,
@@ -172,27 +201,33 @@ class BookingController extends Controller
         // Redirect pengguna ke halaman transaksi
         if ($user->role_id == 1) {
             return redirect()->route('owner.transaction');
-        } elseif ($user->role_id == 2) {
-            session()->flash('success', 'Data lapangan berhasil ditambahkan');
-            return redirect()->route('advisor.bookingIndex');
+        } elseif ($user->role_id == 3) {
+            return redirect()->route('user.transaction');
         }
     }
 
     public function transaction()
     {
+        $user = auth()->user();
         $bookingData = session('booking_data');
         $fieldData = FieldData::find($bookingData['field_data_id']);
         $paymentMethods = PaymentMethod::all();
-        // dd($fieldData);
-        return view('admin.owner.transaction.transaction', compact('bookingData', 'fieldData', 'paymentMethods'));
+
+        if ($user->role_id == 1) {
+            return view('admin.owner.booking.transaction', compact('bookingData', 'fieldData', 'paymentMethods'));
+        } elseif ($user->role_id == 3) {
+            return view('user.transaction.transaction', compact('bookingData', 'fieldData', 'paymentMethods'));
+        }
     }
 
     public function storeTransaction(Request $request)
     {
         $user = auth()->user();
         $bookingData = session('booking_data');
-        if ($bookingData['is_member'] == true) {
+        $paymentProofPath = null; // Inisialisasi variable
 
+        // Validasi input berdasarkan kondisi
+        if ($bookingData['is_member'] == true) {
             $request->validate([
                 'payment_method' => 'required',
             ], [
@@ -208,7 +243,7 @@ class BookingController extends Controller
             ]);
         }
 
-        if ($request->payment_method != 1) {
+        if ($user->role_id == 1 && $request->payment_method != 1) {
             $request->validate([
                 'payment_proof' => 'required|mimes:jpg,jpeg,png|max:2048',
                 'account_name' => 'required',
@@ -218,20 +253,18 @@ class BookingController extends Controller
             ]);
 
             $paymentProofPath = $request->file('payment_proof')->store('payment-proofs', 'public');
-        }else{
-            $paymentProofPath = null;
         }
 
-        // Tentukan apakah pelanggan adalah member
+        // Menentukan apakah pelanggan adalah member
         $isMember = $request->is_member;
 
         if ($isMember) {
+            // Buat booking jika pelanggan adalah member
             $booking = Booking::create([
                 'field_data_id' => $request->field_data_id,
                 'customer_name' => $request->customer_name,
                 'is_member' => $isMember, // Atur status member
-                'discount' => $isMember ? 85000 : 0, // Berikan diskon jika member
-                'booking_status' => false,
+                'discount' => $isMember ? 85000 : 0,
             ]);
 
             // Iterasi melalui tanggal jadwal
@@ -286,17 +319,24 @@ class BookingController extends Controller
             // Simpan total_subtotal (total setelah diskon) ke dalam tabel booking
             $booking->total_subtotal = $totalAfterDiscount;
             $booking->save();
+            $transaction = Transaction::create([
+                'booking_id' => $booking->id,
+                'user_id' => $user->id,
+                'payment_method_dp' => $request->payment_method,
+                'payment_proof_dp' => $paymentProofPath,
+                'account_name_dp' => $request->account_name,
+                'down_payment' => $totalAfterDiscount,
+            ]);
         } else {
+            // Buat booking jika pelanggan bukan member
             $discount = $request->discount ?? 0;
-            // Buat booking jika validasi berhasil
             $booking = Booking::create([
                 'field_data_id' => $request->field_data_id,
                 'customer_name' => $request->customer_name,
                 'discount' => $discount,
-                'down_payment' => $request->down_payment,
-                'booking_status' => false,
             ]);
 
+            // Hitung total sebelum diskon
             $totalBeforeDiscount = 0;
 
             foreach ($request->selected_schedules as $scheduleId) {
@@ -334,43 +374,432 @@ class BookingController extends Controller
             // Simpan total_subtotal (total setelah diskon) ke dalam tabel booking
             $booking->total_subtotal = $totalAfterDiscount;
             $booking->save();
-        }
 
-        $transaction = Transaction::create([
-            'booking_id' => $booking->id,
-            'user_id' => $user->id,
-            'payment_method_id' => $request->payment_method,
-            'payment_proof' => $paymentProofPath,
-            'account_name' => $request->account_name,
-
-        ]);
-
-        if ($user->role_id == 1) {
-            $booking = Booking::find($booking->id);
-            $booking->update([
-                'booking_status' => true,
+            // Buat transaksi dengan pembayaran DP
+            $transaction = Transaction::create([
+                'booking_id' => $booking->id,
+                'user_id' => $user->id,
+                'payment_method_dp' => $request->payment_method,
+                'payment_proof_dp' => $paymentProofPath,
+                'account_name_dp' => $request->account_name,
+                'down_payment' => $request->down_payment,
             ]);
         }
 
-
         session()->forget('booking_data');
-        // Buat booking jika validasi berhasil
+        // Update status booking berdasarkan peran pengguna
         if ($user->role_id == 1) {
+            if ($isMember) {
+                $booking->update([
+                    'booking_status' => 4,
+                ]);
+            } else {
+                $booking->update([
+                    'booking_status' => 2,
+                ]);
+            }
+
             session()->flash('success', 'Data booking berhasil ditambahkan');
             // Redirect pengguna ke halaman transaksi
             return redirect()->route('owner.bookingIndex');
-            // return redirect()->route('owner.bookingIndex');
-        } else if ($user->role_id == 2) {
-            session()->flash('success', 'Data lapangan berhasil ditambahkan');
-            return redirect()->route('advisor.bookingIndex');
+        } elseif ($user->role_id == 3) {
+            if ($transaction->payment_method_dp != 1) {
+                return redirect()->route('user.paymentTransaction', $transaction->id);
+            } else {
+                $booking->update([
+                    'booking_status' => 1,
+                ]);
+
+                $recipients = User::where('role_id', 1)
+                    ->pluck('email');
+
+                $roleName = User::where('role_id', 1)->get();
+
+                Mail::to($recipients)->send(new ConfirmationBooking($transaction, $roleName));
+                return redirect()->route('user.noticeTransaction', $transaction->id);
+            }
         }
     }
 
+
     public function paymentTransaction($id)
     {
-        session()->forget('booking_data');
+        $user = auth()->user();
+        $transaction = Transaction::with('paymentMethodDP', 'booking.fieldData')->find($id);
+        if (!$transaction) {
+            return abort(404); // Atau bisa juga return redirect()->route('route_name')->with('error', 'Transaksi tidak ditemukan');
+        }
+
+        if ($transaction->payment_method_dp == 1 || $transaction->payment_proof_dp != null) {
+            return abort(403);
+        }
+
+        if ($transaction->user_id != auth()->user()->id) {
+            return abort(403);
+        }
+        return view('user.transaction.payment', compact('transaction'));
+    }
+
+    public function paymentTransactionStore($id, Request $request)
+    {
+        $request->validate([
+            'payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'account_name' => 'required',
+        ], [
+            'payment_proof.required' => 'Bukti pembayaran harus diisi',
+            'payment_proof.image' => 'File harus berupa gambar',
+            'payment_proof.mimes' => 'File harus berupa jpeg, png, atau jpg',
+            'payment_proof.max' => 'File tidak boleh lebih dari 2 MB',
+            'account_name.required' => 'Nama harus diisi',
+        ]);
+
         $transaction = Transaction::find($id);
-        dd($transaction);
-        return view('admin.owner.transaction.payment', compact('transaction'));
+        $paymentProofPath = $request->file('payment_proof')->store('payment-proofs', 'public');
+        $transaction->update([
+            'payment_proof_dp' => $paymentProofPath,
+            'account_name_dp' => $request->account_name,
+        ]);
+
+        $transaction->booking->update([
+            'booking_status' => 1,
+        ]);
+
+        $recipients = User::where('role_id', 1)
+            ->pluck('email');
+
+        $getRole = User::with('role')->where('role_id', 1)->get();
+        $roleName = $getRole->role->name;
+        Mail::to($recipients)->send(new ConfirmationBooking($transaction, $roleName));
+        // Redirect ke halaman pemberitahuan transaksi sedang diproses
+        return redirect()->route('user.noticeTransaction', $id);
+    }
+
+    public function noticeTransaction($id)
+    {
+
+        $transaction = Transaction::with('paymentMethodDP', 'booking.fieldData')->find($id);
+        if (!$transaction) {
+            return abort(404);
+        }
+
+        if ($transaction->user_id != auth()->user()->id) {
+            return abort(403);
+        }
+
+        return view('user.transaction.getProcess', compact('transaction'));
+    }
+
+    public function confirmPaymentDP($id)
+    {
+        $booking = Booking::find($id);
+        if ($booking->is_member == 1) {
+            $booking->update([
+                'booking_status' => 4,
+            ]);
+        } else {
+            $booking->update([
+                'booking_status' => 2,
+            ]);
+        }
+
+        session()->flash('success', 'Data booking berhasil diperbarui');
+        // Redirect pengguna ke halaman transaksi
+        return redirect()->route('owner.bookingIndex');
+    }
+
+    public function invalidatePaymentDP($id)
+    {
+        $booking = Booking::find($id);
+        $booking->update([
+            'booking_status' => 0,
+        ]);
+
+        session()->flash('success', 'Data booking berhasil diperbarui');
+        // Redirect pengguna ke halaman transaksi
+        return redirect()->route('owner.bookingIndex');
+    }
+
+    public function canceledBooking($id)
+    {
+        $booking = Booking::find($id);
+        $booking->update([
+            'booking_status' => 3,
+        ]);
+
+        session()->flash('success', 'Data booking berhasil diperbarui');
+        // Redirect pengguna ke halaman transaksi
+        return redirect()->route('owner.bookingIndex');
+    }
+
+    public function confirmPaymentRemaining($id, Request $request)
+    {
+        if ($request->payment_method != 1) {
+            $request->validate([
+                'payment_method' => 'required',
+                'payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+                'account_name' => 'required',
+            ], [
+                'payment_method.required' => 'Metode pembayaran harus dipilih',
+                'payment_proof.required' => 'Bukti pembayaran harus diisi',
+                'payment_proof.image' => 'File harus berupa gambar',
+                'payment_proof.mimes' => 'File harus berupa jpeg, png, atau jpg',
+                'payment_proof.max' => 'File tidak boleh lebih dari 2 MB',
+                'account_name.required' => 'Nama harus diisi',
+            ]);
+        } else {
+            $request->validate([
+                'payment_method' => 'required',
+            ], [
+                'payment_method.required' => 'Metode pembayaran harus dipilih',
+            ]);
+        }
+
+        if ($request->payment_method != 1) {
+            $paymentProofPath = $request->file('payment_proof')->store('payment-proofs', 'public');
+        } else {
+            $paymentProofPath = null;
+        }
+
+        $transaction = Transaction::find($id);
+        $transaction->update([
+            'payment_method_remaining' => $request->payment_method,
+            'payment_proof_remaining' => $paymentProofPath,
+            'account_name_remaining' => $request->account_name,
+            'remaining_payment' => $request->remaining_payment,
+        ]);
+
+        $transaction->booking->update([
+            'booking_status' => 4,
+        ]);
+
+        // Redirect ke halaman pemberitahuan transaksi sedang diproses
+        session()->flash('success', 'Data booking berhasil diperbarui');
+        // Redirect pengguna ke halaman transaksi
+        return redirect()->route('owner.bookingIndex');
+    }
+
+    public function transactionIndex()
+    {
+        $startDate = Carbon::now()->startOfDay();
+        $endDate = Carbon::now()->endOfDay();
+        // Mengambil semua PaymentMethod
+        $paymentMethods = PaymentMethod::all();
+
+        // Array untuk menyimpan total untuk setiap PaymentMethod
+        $totals = [];
+
+        // Menghitung total down_payment dan remaining_payment untuk setiap PaymentMethod
+        foreach ($paymentMethods as $paymentMethod) {
+            // Menghitung total down_payment dengan payment_method_dp = id PaymentMethod saat ini
+            $totalDownPayment = Transaction::where('payment_method_dp', $paymentMethod->id)
+                ->whereHas('booking', function ($query) use ($startDate, $endDate) {
+                    $query->where('booking_status', '>=', 2)
+                        ->whereBetween('created_at', [$startDate, $endDate]);
+                })->sum('down_payment');
+
+            // Menghitung total remaining_payment dengan payment_method_remaining = id PaymentMethod saat ini
+            $totalRemainingPayment = Transaction::where('payment_method_remaining', $paymentMethod->id)
+                ->whereHas('booking', function ($query) use ($startDate, $endDate) {
+                    $query->where('booking_status', '>=', 2)
+                        ->whereBetween('created_at', [$startDate, $endDate]);
+                })->sum('remaining_payment');
+
+            // Total untuk PaymentMethod saat ini
+            $totals[$paymentMethod->name] = $totalDownPayment + $totalRemainingPayment;
+        }
+
+        // $transactions = Transaction::whereHas('booking', function ($query) use ($startDate, $endDate) {
+        //     $query->where('booking_status', '>=', 2)
+        //         ->whereBetween('created_at', [$startDate, $endDate]);
+        // })->with('booking.fieldData')->get();
+
+        $transactions = Transaction::join('bookings', 'transactions.booking_id', '=', 'bookings.id')
+            ->join('field_data', 'bookings.field_data_id', '=', 'field_data.id')
+            ->select('transactions.*')
+            ->whereHas('booking', function ($query) use ($startDate, $endDate) {
+                $query->where('booking_status', '>=', 2)
+                    ->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->orderBy(DB::raw('(SELECT field_type FROM field_data WHERE id = bookings.field_data_id)'))
+            ->orderBy(DB::raw('(SELECT name FROM field_data WHERE id = bookings.field_data_id)'))
+            ->with('booking.fieldData')
+            ->get();
+
+        $totalTransaction = 0;
+        // Menghitung total pembayaran untuk setiap transaksi
+        foreach ($transactions as $transaction) {
+            // Mengambil down payment dari transaksi pertama
+            $downPayment = $transaction->down_payment;
+
+            // Mengambil remaining payment dari transaksi pertama
+            $remainingPayment = $transaction->remaining_payment;
+
+            // Menyimpan total pembayaran ke dalam atribut baru di dalam objek transaksi
+            $transaction->total_payment = $downPayment + $remainingPayment;
+
+            // Menambahkan total pembayaran ke total transaksi keseluruhan
+            $totalTransaction += $transaction->total_payment;
+        }
+
+        return view('admin.owner.transaction.index', compact('transactions', 'startDate', 'endDate', 'totals', 'totalTransaction'));
+    }
+
+    public function loadTransactions(Request $request)
+    {
+        $startDate = Carbon::parse($request->start_date)->startOfDay();
+        $endDate = Carbon::parse($request->end_date)->endOfDay();
+
+        $paymentMethods = PaymentMethod::all();
+
+        // Array untuk menyimpan total untuk setiap PaymentMethod
+        $totals = [];
+
+        // Menghitung total down_payment dan remaining_payment untuk setiap PaymentMethod
+        foreach ($paymentMethods as $paymentMethod) {
+            // Menghitung total down_payment dengan payment_method_dp = id PaymentMethod saat ini
+            $totalDownPayment = Transaction::where('payment_method_dp', $paymentMethod->id)
+                ->whereHas('booking', function ($query) use ($startDate, $endDate) {
+                    $query->where('booking_status', '>=', 2)
+                        ->whereBetween('created_at', [$startDate, $endDate]);
+                })->sum('down_payment');
+
+            // Menghitung total remaining_payment dengan payment_method_remaining = id PaymentMethod saat ini
+            $totalRemainingPayment = Transaction::where('payment_method_remaining', $paymentMethod->id)
+                ->whereHas('booking', function ($query) use ($startDate, $endDate) {
+                    $query->where('booking_status', '>=', 2)
+                        ->whereBetween('created_at', [$startDate, $endDate]);
+                })->sum('remaining_payment');
+
+            // Total untuk PaymentMethod saat ini
+            $totals[$paymentMethod->name] = $totalDownPayment + $totalRemainingPayment;
+        }
+
+        // Query transactions within date range
+        $transactions = Transaction::join('bookings', 'transactions.booking_id', '=', 'bookings.id')
+            ->join('field_data', 'bookings.field_data_id', '=', 'field_data.id')
+            ->select('transactions.*')
+            ->whereHas('booking', function ($query) use ($startDate, $endDate) {
+                $query->where('booking_status', '>=', 2)
+                    ->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->orderBy(DB::raw('(SELECT field_type FROM field_data WHERE id = bookings.field_data_id)'))
+            ->orderBy(DB::raw('(SELECT name FROM field_data WHERE id = bookings.field_data_id)'))
+            ->with('booking.fieldData')
+            ->get();
+
+        foreach ($transactions as $transaction) {
+            // Mengambil down payment dari transaksi pertama
+            $downPayment = $transaction->down_payment;
+
+            // Mengambil remaining payment dari transaksi pertama
+            $remainingPayment = $transaction->remaining_payment;
+
+            // Menyimpan total pembayaran ke dalam atribut baru di dalam objek transaksi
+            $transaction->total_payment = $downPayment + $remainingPayment;
+        }
+
+        $totalTransaction = 0;
+        // Menghitung total pembayaran untuk setiap transaksi
+        foreach ($transactions as $transaction) {
+            // Mengambil down payment dari transaksi pertama
+            $downPayment = $transaction->booking->transactions->first()->down_payment;
+
+            // Mengambil remaining payment dari transaksi pertama
+            $remainingPayment = $transaction->booking->transactions->first()->remaining_payment;
+
+            // Menyimpan total pembayaran ke dalam atribut baru di dalam objek transaksi
+            $transaction->total_payment = $downPayment + $remainingPayment;
+
+            // Menambahkan total pembayaran ke total transaksi keseluruhan
+            $totalTransaction += $transaction->total_payment;
+        }
+
+        return response()->json(
+            [
+                'transactions' => $transactions,
+                'totals' => $totals,
+                'totalTransaction' => $totalTransaction
+            ]
+        );
+    }
+
+    public function transactionExportPDF(Request $request)
+    {
+        $startDate = Carbon::parse($request->start_date)->startOfDay();
+        $endDate = Carbon::parse($request->end_date)->endOfDay();
+
+        // Mengambil semua PaymentMethod
+        $paymentMethods = PaymentMethod::all();
+
+        // Array untuk menyimpan total untuk setiap PaymentMethod
+        $totals = [];
+
+        // Menghitung total down_payment dan remaining_payment untuk setiap PaymentMethod
+        foreach ($paymentMethods as $paymentMethod) {
+            // Menghitung total down_payment dengan payment_method_dp = id PaymentMethod saat ini
+            $totalDownPayment = Transaction::where('payment_method_dp', $paymentMethod->id)
+                ->whereHas('booking', function ($query) use ($startDate, $endDate) {
+                    $query->where('booking_status', '>=', 2)
+                        ->whereBetween('created_at', [$startDate, $endDate]);
+                })->sum('down_payment');
+
+            // Menghitung total remaining_payment dengan payment_method_remaining = id PaymentMethod saat ini
+            $totalRemainingPayment = Transaction::where('payment_method_remaining', $paymentMethod->id)
+                ->whereHas('booking', function ($query) use ($startDate, $endDate) {
+                    $query->where('booking_status', '>=', 2)
+                        ->whereBetween('created_at', [$startDate, $endDate]);
+                })->sum('remaining_payment');
+
+            // Total untuk PaymentMethod saat ini
+            $totals[$paymentMethod->name] = $totalDownPayment + $totalRemainingPayment;
+        }
+
+        $transactions = Transaction::join('bookings', 'transactions.booking_id', '=', 'bookings.id')
+            ->join('field_data', 'bookings.field_data_id', '=', 'field_data.id')
+            ->select('transactions.*')
+            ->whereHas('booking', function ($query) use ($startDate, $endDate) {
+                $query->where('booking_status', '>=', 2)
+                    ->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->orderBy(DB::raw('(SELECT field_type FROM field_data WHERE id = bookings.field_data_id)'))
+            ->orderBy(DB::raw('(SELECT name FROM field_data WHERE id = bookings.field_data_id)'))
+            ->with('booking.fieldData')
+            ->get();
+
+        $totalTransaction = 0;
+        // Menghitung total pembayaran untuk setiap transaksi
+        foreach ($transactions as $transaction) {
+            // Mengambil down payment dari transaksi pertama
+            $downPayment = $transaction->booking->transactions->first()->down_payment;
+
+            // Mengambil remaining payment dari transaksi pertama
+            $remainingPayment = $transaction->booking->transactions->first()->remaining_payment;
+
+            // Menyimpan total pembayaran ke dalam atribut baru di dalam objek transaksi
+            $transaction->total_payment = $downPayment + $remainingPayment;
+
+            // Menambahkan total pembayaran ke total transaksi keseluruhan
+            $totalTransaction += $transaction->total_payment;
+        }
+
+        // Load view template
+        $pdfView = view('admin.owner.transaction.transaction-pdf', compact('transactions', 'startDate', 'endDate', 'totals', 'totalTransaction'));
+
+        // Create PDF
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($pdfView->render());
+
+        // (Optional) Set paper size and orientation
+        $dompdf->setPaper('A4', 'landscape');
+
+        // Render PDF (optional: save to file)
+        $dompdf->render();
+
+        // Output PDF to browser
+        return $dompdf->stream('transactions.pdf');
     }
 }

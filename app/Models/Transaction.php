@@ -12,7 +12,20 @@ class Transaction extends Model
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
-    protected $fillable = ['id', 'booking_id', 'user_id', 'payment_method_id', 'account_name', 'payment_proof'];
+    protected $fillable =
+    [
+        'id',
+        'booking_id',
+        'user_id',
+        'payment_method_dp',
+        'account_name_dp',
+        'payment_proof_dp',
+        'down_payment',
+        'payment_method_remaining',
+        'account_name_remaining',
+        'payment_proof_remaining',
+        'remaining_payment',
+    ];
 
     protected $casts = [
         'booking_id' => 'string'
@@ -28,8 +41,12 @@ class Transaction extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function paymentMethod()
+    public function paymentMethodDP()
     {
-        return $this->belongsTo(PaymentMethod::class, 'payment_method_id');
+        return $this->belongsTo(PaymentMethod::class, 'payment_method_dp');
+    }
+    public function paymentMethodRemaining()
+    {
+        return $this->belongsTo(PaymentMethod::class, 'payment_method_remaining');
     }
 }

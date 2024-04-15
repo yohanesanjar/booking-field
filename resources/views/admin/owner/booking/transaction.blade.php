@@ -1,9 +1,6 @@
 @extends('admin.layouts.main')
 
 @section('content')
-    {{-- @dd($bookingData) --}}
-    {{-- @dd($fieldData) --}}
-    {{-- @dd($fieldSchedules) --}}
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Transaksi</h1>
     </div>
@@ -25,11 +22,12 @@
                     @endforeach
                     <div class="row">
                         <div class="form-group col-12 flex-column d-flex">
-                            <h4>{{ $fieldData->name }}</h4>
+                            <h4>{{ $fieldData->name }} | {{ $fieldData->field_type }}</h4>
                         </div>
                         <hr style="border-top: 2px solid #000;">
                         <div class="form-group col-12 flex-column d-flex">
                             <p>Nama Pemesan : {{ $bookingData['customer_name'] }}</p>
+                            <p>Member : {{ $bookingData['is_member'] == 1 ? 'Ya' : 'Tidak' }}</p>
                         </div>
                         <div class="form-group col-12 flex-column d-flex">
                             <table class="table">
@@ -54,14 +52,17 @@
                                                     @endphp
                                                 @endif
                                             </td>
-                                            <td class="text-center">{{ $data['start_time'] }} - {{ $data['end_time'] }}</td>
-                                            <td class="text-center">Rp {{ number_format($data['sub_total'], 0, ',', '.') }}</td>
+                                            <td class="text-center">{{ $data['start_time'] }} - {{ $data['end_time'] }}
+                                            </td>
+                                            <td class="text-center">Rp {{ number_format($data['sub_total'], 0, ',', '.') }}
+                                            </td>
                                         </tr>
                                     @endforeach
                                     @if ($bookingData['is_member'] == 1)
                                         <tr>
                                             <td class="text-center" colspan="2">Total</td>
-                                            <td class="text-center">Rp {{ number_format($bookingData['total_before_discount'], 0, ',', '.') }}
+                                            <td class="text-center">Rp
+                                                {{ number_format($bookingData['total_before_discount'], 0, ',', '.') }}
                                             </td>
                                         </tr>
                                         <tr>

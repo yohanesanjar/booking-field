@@ -12,13 +12,18 @@ class AuthController extends Controller
         if (Auth::check()) {
             if (Auth::user()->role->name == 'owner') {
                 return redirect()->route('owner.dashboard');
-            } else if(Auth::user()->role->name == 'advisor') {
+            } else if (Auth::user()->role->name == 'advisor') {
                 return redirect()->route('advisor.dashboard');
-            } else if(Auth::user()->role->name == 'user') {
+            } else if (Auth::user()->role->name == 'user') {
                 return redirect()->route('user.index');
             }
         }
 
+        return view('user.index');
+    }
+
+    public function loginView()
+    {
         return view('auth.login');
     }
     public function login(Request $request)
@@ -28,13 +33,13 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if(Auth::attempt($credentials)){
-            if(Auth::user()->role->name == 'owner') {
+        if (Auth::attempt($credentials)) {
+            if (Auth::user()->role->name == 'owner') {
                 return redirect()->route('owner.dashboard');
-            } else if(Auth::user()->role->name == 'advisor') {
+            } else if (Auth::user()->role->name == 'advisor') {
                 return redirect()->route('advisor.dashboard');
-            } else if(Auth::user()->role->name == 'user') {
-                return redirect()->route('welcome');
+            } else if (Auth::user()->role->name == 'user') {
+                return redirect()->route('user.index');
             }
         }
 
@@ -43,9 +48,11 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        $user = auth()->user();
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('auth.login');
+
+        return redirect()->route('index');
     }
 }

@@ -81,6 +81,11 @@ class FieldsController extends Controller
     {
         $user = auth()->user();
         $fieldData = FieldData::find($id);
+
+        if (!$fieldData) {
+            return view('admin.owner.404');
+        }
+
         if ($user->role_id == 1) {
             return view('admin.owner.fields.data.edit', compact('fieldData'));
         } else if ($user->role_id == 2) {

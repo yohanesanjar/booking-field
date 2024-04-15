@@ -41,17 +41,24 @@
                             <td class="text-center">{{ $booking->fieldData->field_type }}</td>
                             <td class="text-center">Rp {{ number_format($booking->total_subtotal, 0, ',', '.') }}</td>
                             <td class="text-center">
-                                @if ($booking->booking_status == 1)
-                                    <span class="badge text-bg-success">Valid</span>
-                                @else
-                                    <span class="badge text-bg-danger">Invalid</span>
+                                @if ($booking->booking_status == 0)
+                                    <span class="badge text-bg-danger text-white">Tidak valid</span>
+                                @elseif($booking->booking_status == 1)
+                                    <span class="badge text-bg-warning text-white">Butuh konfirmasi</span>
+                                @elseif($booking->booking_status == 2)
+                                    <span class="badge text-bg-primary text-white">Sudah bayar DP</span>
+                                @elseif($booking->booking_status == 3)
+                                    <span class="badge text-bg-secondary text-white">Dibatalkan</span>
+                                @elseif($booking->booking_status == 4)
+                                    <span class="badge text-bg-success text-white">Lunas</span>
+                                @elseif($booking->booking_status == -1)
+                                    <span style="background-color:saddlebrown" class="badge text-white">Tunggu</span>
                                 @endif
                             </td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-1">
                                     <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                        data-bs-target="#detailModal{{ $booking->id }} "><i class="fa fa-eye"></i></a>
-
+                                        data-bs-target="#detailModal{{ $booking->id }} ">Lihat</a>
                                     {{-- Modal --}}
                                     <div class="modal fade" id="detailModal{{ $booking->id }}" tabindex="-1"
                                         aria-labelledby="detailModal{{ $booking->id }}" aria-hidden="true">
@@ -73,12 +80,6 @@
                                                             <p>{{ $booking->created_at }}</p>
                                                         </div>
                                                     </div>
-                                                    {{-- <div class="row mb-2">
-                                                        <div class="col">
-                                                            <img src="{{ asset('storage/' . $booking->thumbnail) }}"
-                                                                style="width: 150px" alt="{{ $booking->thumbnail }}">
-                                                        </div>
-                                                    </div> --}}
                                                     <div class="row mb-2">
                                                         <div class="col text-start">
                                                             <label for="message-text" class="col-label">Nama
@@ -175,7 +176,8 @@
                                                     <div class="row mb-2">
                                                         <div class="col text-start">
                                                             <label for="message-text" class="col-label">DP:</label>
-                                                            <p>Rp. {{ number_format($booking->down_payment, 0, ',', '.') }}
+                                                            <p>Rp.
+                                                                {{ number_format($booking->transactions->first()->down_payment, 0, ',', '.') }}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -183,49 +185,147 @@
                                                         <div class="col text-start">
                                                             <label for="message-text" class="col-label">Metode
                                                                 Pembayaran:</label>
-                                                            <p>{{ $booking->transactions->first()->paymentMethod->name }}
+                                                            <p>{{ $booking->transactions->first()->paymentMethodDP->name }}
                                                             </p>
                                                         </div>
-                                                    </div>
-                                                    @if($booking->transactions->first()->paymentMethod->id != 1)
-                                                    <div class="row mb-2">
-                                                        <div class="col text-start">
-                                                            <label for="payment_proof" class="col-label">Bukti
-                                                                Pembayaran<span class="text-danger">
-                                                                    *</span></label>
-                                                            <div>
-                                                                <img class="pb-3" src="{{ asset('storage/' . $booking->transactions->first()->payment_proof) }}" id="payment-proof"style="width: 100px;">
+                                                        @if ($booking->transactions->first()->paymentMethodDP->id != 1)
+                                                            <div class="col text-start">
+                                                                <label for="payment_proof" class="col-label">Bukti
+                                                                    Pembayaran<span class="text-danger">
+                                                                        *</span></label>
+                                                                <div>
+                                                                    <img class="pb-3"
+                                                                        src="{{ asset('storage/' . $booking->transactions->first()->payment_proof_dp) }}"
+                                                                        id="payment-proof"style="width: 100px;">
+                                                                </div>
                                                             </div>
-                                                        </div>
+                                                            <div class="col text-start">
+                                                                <label for="message-text" class="col-label">Nama
+                                                                    Akun:</label>
+                                                                <p>{{ $booking->transactions->first()->account_name_dp }}
+                                                                </p>
+                                                            </div>
+                                                        @endif
                                                     </div>
-                                                    <div class="row mb-2">
-                                                        <div class="col text-start">
-                                                            <label for="message-text" class="col-label">Nama Akun:</label>
-                                                            <p>{{ $booking->transactions->first()->paymentMethod->account_name }}</p>
-                                                        </div>
-                                                    </div>
-                                                    @endif
                                                 </div>
 
                                                 <div class="modal-footer">
+                                                    {{-- <a href="{{ route('owner.fieldEdit', $booking->id) }}"
+                                                        class="btn btn-warning">Edit</a> --}}
                                                     <button type="button" class="btn btn-secondary"
                                                         data-bs-dismiss="modal">Close</button>
-                                                    <a href="{{ route('owner.fieldEdit', $booking->id) }}"
-                                                        class="btn btn-warning">Edit</a>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                    @if ($booking->booking_status == 1)
+                                        <form action="{{ route('owner.confirmPaymentDP', $booking->id) }}"
+                                            method="POST">
+                                            @method('PUT')
+                                            @csrf
+                                            <button type="submit" class="btn btn-primary btn-sm">Konfirmasi DP</button>
+                                        </form>
+                                        <form action="{{ route('owner.invalidatePaymentDP', $booking->id) }}"
+                                            method="POST">
+                                            @method('PUT')
+                                            @csrf
+                                            <button type="submit" class="btn btn-danger btn-sm">Tidak Valid</i></button>
+                                        </form>
+                                    @elseif ($booking->booking_status == 2)
+                                        <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                            data-bs-target="#remaining_payment{{ $booking->id }}">Konfirmasi
+                                            Pelunasan</a>
+                                        <div class="modal fade" id="remaining_payment{{ $booking->id }}" tabindex="-1"
+                                            aria-labelledby="remaining_payment{{ $booking->id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h1 class="modal-title fs-5"
+                                                            id="remaining_payment{{ $booking->id }}">Konfirmasi
+                                                            Pelunasan</h1>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                            aria-label="Close"></button>
+                                                    </div>
+                                                    <form
+                                                        action="{{ route('owner.confirmPaymentRemaining', $booking->transactions->first()->id) }}"
+                                                        method="POST" enctype="multipart/form-data">
+                                                        @method('PUT')
+                                                        @csrf
+                                                        <div class="modal-body">
+                                                            <div class="mb-3 text-start">
+                                                                <label for="remaining_payment"
+                                                                    class="form-control-label">Sisa
+                                                                    Pembayaran</label>
+                                                                <input type="number" id="remaining_payment"
+                                                                    name="remaining_payment" class="form-control"
+                                                                    value="{{ $booking->total_subtotal - $booking->transactions->first()->down_payment }}"
+                                                                    readonly>
+                                                            </div>
+                                                            <div class="mb-3 text-start">
+                                                                <label for="payment_method" class="col-form-label">Jenis
+                                                                    Pembayaran <span class="text-danger"> *</span></label>
+                                                                <select
+                                                                    class="form-select @error('payment_method') is-invalid @enderror"
+                                                                    aria-label="payment_method" id="payment_method"
+                                                                    name="payment_method"
+                                                                    onchange="showHidePaymentFields()">
+                                                                    <option selected disabled>- Pilih jenis pembayaran -
+                                                                    </option>
+                                                                    @foreach ($paymentMethods as $pm)
+                                                                        <option value="{{ $pm->id }}"
+                                                                            {{ old('payment_method') == $pm->name ? 'selected' : '' }}>
+                                                                            {{ $pm->name }}
+                                                                        </option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div id="paymentProof" class="mb-3 text-start"
+                                                                style="display: none;">
+                                                                <label for="payment_proof"
+                                                                    class="form-control-label">Bukti
+                                                                    Pembayaran<span class="text-danger">
+                                                                        *</span></label>
+                                                                <div>
+                                                                    <img class="pb-3"
+                                                                        id="payment-proof-preview"style="width: 100px;">
+                                                                </div>
 
-                                    <form class="deleteForm" action="{{ route('owner.fieldDelete', $booking->id) }}"
-                                        method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete"
-                                            type="button" class="btn btn-sm btn-danger deleteButton">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
-                                    </form>
+                                                                <input class="form-control" type="file"
+                                                                    name="payment_proof" id="payment_proof"
+                                                                    onchange="previewPaymentProof(this)">
+                                                                @error('payment_proof')
+                                                                    <span class="text-danger">{{ $message }}</span>
+                                                                @enderror
+                                                            </div>
+                                                            <div id="accountName" class="mb-3 text-start"
+                                                                style="display: none;">
+                                                                <label for="account_name"
+                                                                    class="form-control-label">Masukkan
+                                                                    Nama Rekening</label>
+                                                                <input type="text" id="account_name"
+                                                                    name="account_name" class="form-control">
+                                                                <!-- Pesan kesalahan jika terjadi kesalahan validasi -->
+                                                                @error('account_name')
+                                                                    <span class="text-danger">{{ $message }}</span>
+                                                                @enderror
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="submit" class="btn btn-primary">Send
+                                                                message</button>
+                                                            <button type="button" class="btn btn-secondary"
+                                                                data-bs-dismiss="modal">Close</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <form action="{{ route('owner.canceledBooking', $booking->id) }}" method="POST">
+                                            @method('PUT')
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-secondary">Batal</button>
+                                        </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -236,26 +336,15 @@
     @endsection
     @section('script')
         <script>
-            var deleteButtons = document.querySelectorAll('.deleteButton');
-
-            deleteButtons.forEach(function(button) {
-                button.addEventListener('click', function() {
-                    var form = this.closest('.deleteForm');
-
-                    Swal.fire({
-                        title: 'Hapus Request',
-                        text: "Apakah Anda Yakin Untuk Menghapus?",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Ya'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
-                });
-            });
+            function showHidePaymentFields() {
+                var paymentMethod = document.getElementById('payment_method').value;
+                if (paymentMethod != 1) {
+                    document.getElementById('paymentProof').style.display = 'block';
+                    document.getElementById('accountName').style.display = 'block';
+                } else {
+                    document.getElementById('paymentProof').style.display = 'none';
+                    document.getElementById('accountName').style.display = 'none';
+                }
+            }
         </script>
     @endsection

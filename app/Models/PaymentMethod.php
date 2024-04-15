@@ -13,8 +13,12 @@ class PaymentMethod extends Model
 
     public $timestamps = false;
 
-    public function transactions()
+    public function transactionDps()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(Transaction::class, 'payment_method_dp');
+    }
+    public function transactionsRemainings()
+    {
+        return $this->hasMany(Transaction::class, 'payment_method_remaining');
     }
 }
