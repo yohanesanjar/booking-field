@@ -13,12 +13,12 @@ class PaymentMethodController extends Controller
     public function index()
     {
         $paymentMethods = PaymentMethod::whereNotIn('id', [1])->get();
-        return view('admin.owner.payment-method.index', compact('paymentMethods'));
+        return view('admin.payment-method.index', compact('paymentMethods'));
     }
 
     public function create()
     {
-        return view('admin.owner.payment-method.create');
+        return view('admin.payment-method.create');
     }
 
     /**
@@ -44,7 +44,7 @@ class PaymentMethodController extends Controller
         ]);
 
         session()->flash('success', 'Metode pembayaran baru ditambahkan');
-        return redirect()->route('owner.paymentMethodIndex');
+        return redirect()->route('admin.paymentMethodIndex');
     }
 
     public function edit(string $id)
@@ -52,10 +52,10 @@ class PaymentMethodController extends Controller
         $paymentMethod = PaymentMethod::find($id);
 
         if (!$paymentMethod || $paymentMethod->id == 1) {
-            return view('admin.owner.404');
+            return view('admin.404');
         }
 
-        return view('admin.owner.payment-method.edit', compact('paymentMethod'));
+        return view('admin.payment-method.edit', compact('paymentMethod'));
     }
 
     /**
@@ -82,7 +82,7 @@ class PaymentMethodController extends Controller
         ]);
 
         session()->flash('success', 'Metode pembayaran baru diperbarui');
-        return redirect()->route('owner.paymentMethodIndex');
+        return redirect()->route('admin.paymentMethodIndex');
     }
 
     /**
@@ -108,6 +108,6 @@ class PaymentMethodController extends Controller
         $paymentMethod->delete();
 
         session()->flash('success', 'Metode pembayaran berhasil dihapus');
-        return redirect()->route('owner.paymentMethodIndex');
+        return redirect()->route('admin.paymentMethodIndex');
     }
 }

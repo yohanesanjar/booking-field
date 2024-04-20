@@ -5,14 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Sportforia</title>
+    <title>Jaya Abadi Sports</title>
 
     {{-- JQuery UI --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
 
     {{-- DataTable CSS --}}
     <link rel="stylesheet" href="https://cdn.datatables.net/2.0.2/css/dataTables.dataTables.css" />
-    
+
     <!-- Google Web Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap"
         rel="stylesheet">
@@ -24,6 +24,10 @@
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet" />
 
+    {{-- Sweet Alert --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.6/dist/sweetalert2.min.css"
+        integrity="sha256-h2Gkn+H33lnKlQTNntQyLXMWq7/9XI2rlPCsLsVcUBs=" crossorigin="anonymous">
+
     {{-- Custom CSS --}}
     <link href="{{ asset('userLib2/css/swiper.css') }}" rel="stylesheet">
     <link href="{{ asset('userLib2/css/styles.css') }}" rel="stylesheet">
@@ -34,11 +38,17 @@
 </head>
 
 <body>
-
-    <div class="navbar pb-5">
-        @include('user.partials.navbar')
-    </div>
-    @yield('content')
+    @if (Route::currentRouteName() == 'index' || Route::currentRouteName() == 'user.index')
+        <div class="navbar-content">
+            @include('user.partials.navbar')
+        </div>
+        @yield('content')
+    @else
+        <div class="navbar pb-5">
+            @include('user.partials.navbar')
+        </div>
+        @yield('content')
+    @endif
 
     @include('user.partials.footer')
 
@@ -73,6 +83,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
         integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous">
     </script>
+
+    {{-- Sweet Alert JS  --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.6/dist/sweetalert2.all.min.js"
+        integrity="sha256-dyw4h6gMbTk1vSiOqcs/wqhyqydsuILBl78WhcD44lY=" crossorigin="anonymous"></script>
 
     <!-- Scripts -->
     <script src="{{ asset('userLib2/js/swiper.min.js') }}"></script> <!-- Swiper for image and text sliders -->

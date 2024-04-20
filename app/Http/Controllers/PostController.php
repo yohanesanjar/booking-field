@@ -15,12 +15,12 @@ class PostController extends Controller
             ->where('user_id', auth()->user()->id)
             ->get();
 
-        return view('admin.owner.posts.index', compact('posts'));
+        return view('admin.posts.index', compact('posts'));
     }
 
     public function create()
     {
-        return view('admin.owner.posts.create');
+        return view('admin.posts.create');
     }
 
     public function store(Request $request)
@@ -56,7 +56,7 @@ class PostController extends Controller
         ]);
 
         session()->flash('success', 'Data post berhasil ditambahkan');
-        return redirect()->route('owner.postIndex');
+        return redirect()->route('admin.postIndex');
     }
 
     public function show($id)
@@ -64,20 +64,20 @@ class PostController extends Controller
         $post = Post::find($id);
 
         if (!$post || $post->user_id != auth()->user()->id) {
-            return view('admin.owner.404');
+            return view('admin.404');
         }
 
-        return view('admin.owner.posts.detail', compact('post'));
+        return view('admin.posts.detail', compact('post'));
     }
     public function edit($id)
     {
         $post = Post::find($id);
 
         if (!$post || $post->user_id != auth()->user()->id) {
-            return view('admin.owner.404');
+            return view('admin.404');
         }
 
-        return view('admin.owner.posts.edit', compact('post'));
+        return view('admin.posts.edit', compact('post'));
     }
 
     public function update(Request $request, $id)
@@ -123,7 +123,7 @@ class PostController extends Controller
         ]);
 
         session()->flash('success', 'Data postingan berhasil diperbarui');
-        return redirect()->route('owner.postIndex');
+        return redirect()->route('admin.postIndex');
     }
 
     public function destroy($id)
@@ -141,7 +141,7 @@ class PostController extends Controller
 
         $post->delete();
         session()->flash('success', 'Data postingan berhasil dihapus');
-        return redirect()->route('owner.postIndex');
+        return redirect()->route('admin.postIndex');
     }
 
     // User Article
@@ -172,5 +172,16 @@ class PostController extends Controller
         ->paginate(5);
 
         return view('user.informations.index', compact('posts'));
+    }
+
+    public function showInformation($id)
+    {
+        $post = Post::find($id);
+        
+        if(!$post) {
+            abort(404);
+        }
+
+        return view('user.informations.detail', compact('post'));
     }
 }

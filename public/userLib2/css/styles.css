@@ -453,7 +453,8 @@ select {
 	text-decoration: none;
 }
 
-.navbar .dropdown-item:hover {
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item.active {
 	background-color: #ffffff;
 	color: #6168ff;
 }
@@ -491,10 +492,6 @@ select {
 	padding-top: 2rem;
 	padding-bottom: 2rem;
 	text-align: center;
-}
-
-.header .h1-large {
-	margin-bottom: 1.25rem;
 }
 
 .header .p-large {
@@ -697,10 +694,6 @@ select {
 	padding-bottom: 9.75rem;
 }
 
-.counter .text-container {
-	margin-bottom: 4rem;
-}
-
 .counter h2 {
 	margin-bottom: 1.875rem;
 }
@@ -734,7 +727,6 @@ select {
 }
 
 .counter .purecounter:after {
-    content: "+";
 	margin-left: 0.5rem;
 }
 
@@ -748,8 +740,8 @@ select {
 /*     Projects     */
 /********************/
 .filter {
-	padding-top: 9.25rem;
-	padding-bottom: 5.625rem;
+	padding-top: 5.25rem;
+	padding-bottom: 3.625rem;
 	text-align: center;
 }
 
@@ -1170,11 +1162,6 @@ select {
 	.header {
 		padding-top: 9rem;
 	}
-
-	.header .h1-large {
-		font-size: 2.75rem;
-		line-height: 3.5rem;
-	}
 	/* end of header */
 
 
@@ -1512,11 +1499,9 @@ select {
 	/* Header */
 	.header {
 		overflow: hidden;
-		padding-top: 18.25rem;
-		padding-bottom: 11.5rem;
 	}
 
-	.header .image-container {
+	/* .header .image-container {
 		position: relative;
 	}
 	
@@ -1526,7 +1511,7 @@ select {
 		left: 10px;
 		width: 840px;
 		max-width: none;
-	}
+	} */
 	/* end of header */
 
 
@@ -1568,7 +1553,7 @@ select {
 		padding-top: 9rem;
 	}
 
-	.counter .image-container {
+	/* .counter .image-container {
 		position: relative;
 	}
 	
@@ -1578,7 +1563,7 @@ select {
 		left: 30px;
 		width: 900px;
 		max-width: none;
-	}
+	} */
 	/* end of details 2 */
 
 
@@ -1711,4 +1696,9 @@ select {
 
 .btn{
 	border-radius: 30px;
+}
+
+#avatar-preview {
+	height: 225px; 
+	width: 500px;
 }

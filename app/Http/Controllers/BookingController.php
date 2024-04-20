@@ -28,7 +28,7 @@ class BookingController extends Controller
             ->get();
         $paymentMethods = PaymentMethod::all();
 
-        return view('admin.owner.booking.index', compact('bookings', 'paymentMethods'));
+        return view('admin.booking.index', compact('bookings', 'paymentMethods'));
     }
 
     public function chooseField()
@@ -36,8 +36,8 @@ class BookingController extends Controller
         $user = auth()->user();
         if ($user->role_id == 1) {
             $fieldDatas = FieldData::all();
-            return view('admin.owner.booking.chooseField', compact('fieldDatas'));
-        } elseif ($user->role_id == 3) {
+            return view('admin.booking.chooseField', compact('fieldDatas'));
+        } elseif ($user->role_id == 2) {
             $fieldDatas = FieldData::paginate(6);
             return view('user.booking.chooseField', compact('fieldDatas'));
         }
@@ -50,13 +50,19 @@ class BookingController extends Controller
         return view('user.booking.chooseField', compact('fieldDatas'));
     }
 
-    public function create($id, Request $request)
+    public function create($id)
     {
         $user = auth()->user();
         $fieldData = FieldData::find($id);
 
-        if (!$fieldData) {
-            return view('admin.owner.404');
+        if ($user->role_id == 1) {
+            if (!$fieldData) {
+                return view('admin.404');
+            }
+        } elseif ($user->role_id == 2) {
+            if (!$fieldData) {
+                return abort(404);
+            }
         }
 
         $schedule_play = Carbon::now()->format('Y-m-d');
@@ -66,8 +72,8 @@ class BookingController extends Controller
         }])->get();
 
         if ($user->role_id == 1) {
-            return view('admin.owner.booking.create', compact('fieldData', 'fieldSchedules', 'schedule_play'));
-        } elseif ($user->role_id == 3) {
+            return view('admin.booking.create', compact('fieldData', 'fieldSchedules', 'schedule_play'));
+        } elseif ($user->role_id == 2) {
             return view('user.booking.create', compact('fieldData', 'fieldSchedules', 'schedule_play'));
         }
     }
@@ -200,8 +206,8 @@ class BookingController extends Controller
 
         // Redirect pengguna ke halaman transaksi
         if ($user->role_id == 1) {
-            return redirect()->route('owner.transaction');
-        } elseif ($user->role_id == 3) {
+            return redirect()->route('admin.transaction');
+        } elseif ($user->role_id == 2) {
             return redirect()->route('user.transaction');
         }
     }
@@ -214,8 +220,8 @@ class BookingController extends Controller
         $paymentMethods = PaymentMethod::all();
 
         if ($user->role_id == 1) {
-            return view('admin.owner.booking.transaction', compact('bookingData', 'fieldData', 'paymentMethods'));
-        } elseif ($user->role_id == 3) {
+            return view('admin.booking.transaction', compact('bookingData', 'fieldData', 'paymentMethods'));
+        } elseif ($user->role_id == 2) {
             return view('user.transaction.transaction', compact('bookingData', 'fieldData', 'paymentMethods'));
         }
     }
@@ -401,8 +407,8 @@ class BookingController extends Controller
 
             session()->flash('success', 'Data booking berhasil ditambahkan');
             // Redirect pengguna ke halaman transaksi
-            return redirect()->route('owner.bookingIndex');
-        } elseif ($user->role_id == 3) {
+            return redirect()->route('admin.bookingIndex');
+        } elseif ($user->role_id == 2) {
             if ($transaction->payment_method_dp != 1) {
                 return redirect()->route('user.paymentTransaction', $transaction->id);
             } else {
@@ -437,6 +443,7 @@ class BookingController extends Controller
         if ($transaction->user_id != auth()->user()->id) {
             return abort(403);
         }
+
         return view('user.transaction.payment', compact('transaction'));
     }
 
@@ -504,7 +511,7 @@ class BookingController extends Controller
 
         session()->flash('success', 'Data booking berhasil diperbarui');
         // Redirect pengguna ke halaman transaksi
-        return redirect()->route('owner.bookingIndex');
+        return redirect()->route('admin.bookingIndex');
     }
 
     public function invalidatePaymentDP($id)
@@ -516,7 +523,7 @@ class BookingController extends Controller
 
         session()->flash('success', 'Data booking berhasil diperbarui');
         // Redirect pengguna ke halaman transaksi
-        return redirect()->route('owner.bookingIndex');
+        return redirect()->route('admin.bookingIndex');
     }
 
     public function canceledBooking($id)
@@ -528,7 +535,7 @@ class BookingController extends Controller
 
         session()->flash('success', 'Data booking berhasil diperbarui');
         // Redirect pengguna ke halaman transaksi
-        return redirect()->route('owner.bookingIndex');
+        return redirect()->route('admin.bookingIndex');
     }
 
     public function confirmPaymentRemaining($id, Request $request)
@@ -560,11 +567,17 @@ class BookingController extends Controller
             $paymentProofPath = null;
         }
 
+        if ($request->payment_method == !1) {
+            $account_name_remaining = $request->account_name;
+        } else {
+            $account_name_remaining = null;
+        }
+
         $transaction = Transaction::find($id);
         $transaction->update([
             'payment_method_remaining' => $request->payment_method,
             'payment_proof_remaining' => $paymentProofPath,
-            'account_name_remaining' => $request->account_name,
+            'account_name_remaining' => $account_name_remaining,
             'remaining_payment' => $request->remaining_payment,
         ]);
 
@@ -575,7 +588,7 @@ class BookingController extends Controller
         // Redirect ke halaman pemberitahuan transaksi sedang diproses
         session()->flash('success', 'Data booking berhasil diperbarui');
         // Redirect pengguna ke halaman transaksi
-        return redirect()->route('owner.bookingIndex');
+        return redirect()->route('admin.bookingIndex');
     }
 
     public function transactionIndex()
@@ -608,11 +621,6 @@ class BookingController extends Controller
             $totals[$paymentMethod->name] = $totalDownPayment + $totalRemainingPayment;
         }
 
-        // $transactions = Transaction::whereHas('booking', function ($query) use ($startDate, $endDate) {
-        //     $query->where('booking_status', '>=', 2)
-        //         ->whereBetween('created_at', [$startDate, $endDate]);
-        // })->with('booking.fieldData')->get();
-
         $transactions = Transaction::join('bookings', 'transactions.booking_id', '=', 'bookings.id')
             ->join('field_data', 'bookings.field_data_id', '=', 'field_data.id')
             ->select('transactions.*')
@@ -641,7 +649,7 @@ class BookingController extends Controller
             $totalTransaction += $transaction->total_payment;
         }
 
-        return view('admin.owner.transaction.index', compact('transactions', 'startDate', 'endDate', 'totals', 'totalTransaction'));
+        return view('admin.transaction.index', compact('transactions', 'startDate', 'endDate', 'totals', 'totalTransaction'));
     }
 
     public function loadTransactions(Request $request)
@@ -783,7 +791,7 @@ class BookingController extends Controller
         }
 
         // Load view template
-        $pdfView = view('admin.owner.transaction.transaction-pdf', compact('transactions', 'startDate', 'endDate', 'totals', 'totalTransaction'));
+        $pdfView = view('admin.transaction.transaction-pdf', compact('transactions', 'startDate', 'endDate', 'totals', 'totalTransaction'));
 
         // Create PDF
         $options = new Options();

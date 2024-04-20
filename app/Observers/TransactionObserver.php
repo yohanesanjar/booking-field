@@ -11,7 +11,7 @@ class TransactionObserver
     public function creating(Transaction $transaction)
     {
         // Mendapatkan tanggal saat ini dengan format YYYYMMDD
-        $date = now()->format('Ymd');
+        $date = now()->format('Ym');
 
         // Mencari transaction terakhir pada tanggal ini
         $lastTransaction = Transaction::where('id', 'like', $date . '%')->latest()->first();

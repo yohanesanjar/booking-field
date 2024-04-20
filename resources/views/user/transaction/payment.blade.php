@@ -74,8 +74,8 @@
                                     @enderror
                                 </div>
                                 <div class="mt-3">
-                                    <button class="btn btn-primary btn-block btn-lg">
-                                        Proceed to payment <i class="fas fa-long-arrow-alt-right"></i>
+                                    <button class="btn btn-md btn-primary">
+                                        I Have Paid <i class="fas fa-long-arrow-alt-right"></i>
                                     </button>
                                 </div>
                             </div>

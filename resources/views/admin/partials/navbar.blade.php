@@ -36,31 +36,37 @@
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                     aria-expanded="false">
                     <span class="me-2 d-none d-lg-inline text-gray-600 small">{{ Auth::user()->username }}</span>
-                    <img class="img-profile rounded-circle" src="{{ asset('img/undraw_profile.svg') }}" alt="Profile Picture">
+                    @if (Auth::user()->avatar == null)
+                        <img class="img-profile rounded-circle" src="{{ asset('img/undraw_profile.svg') }}"
+                            alt="Profile Picture">
+                    @else
+                        <img class="img-profile rounded-circle" src="{{ asset('storage/' . Auth::user()->avatar) }}"
+                            alt="{{ Auth::user()->username }}">
+                    @endif
                 </a>
                 <!-- Dropdown - User Information -->
                 <ul class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item" href="#">
+                    <li><a class="dropdown-item" href="{{ route('admin.profile') }}">
                             <i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>
                             Profile
                         </a></li>
-                        <hr class="dropdown-divider">
-                    </li>
-                    <li>
-                        <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                            <button class="dropdown-item" type="submit">
-                                <i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>
-                                Logout
-                        </form>
-                        {{-- <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                    <hr class="dropdown-divider">
+            </li>
+            <li>
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button class="dropdown-item" type="submit">
+                        <i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>
+                        Logout
+                </form>
+                {{-- <a class="dropdown-item" href="#" data-bs-toggle="modal"
                             data-bs-target="#logoutModal">
                             <i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>
                             Logout
                         </a> --}}
-                    </li>
-                </ul>
             </li>
+        </ul>
+        </li>
 
 
         </ul>

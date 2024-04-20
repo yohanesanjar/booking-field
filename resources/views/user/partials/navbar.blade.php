@@ -1,4 +1,4 @@
-<aside id="navbar" class="navbar-layout">
+<aside class="navbar-layout">
     <!-- Navigation -->
     <nav id="navbarExample" class="navbar navbar-expand-lg fixed-top navbar-light" aria-label="Main navigation">
         <div class="container">
@@ -25,16 +25,16 @@
                         <a class="nav-link {{ request()->routeIs('user.booking') ? 'active' : '' }}" href="{{ route('user.booking') }}">Booking</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {{ request()->routeIs('getArticle') || request()->routeIs('getInformation') ? 'active' : '' }}" href="#" role="button" id="dropdown01" data-bs-toggle="dropdown"
+                        <a class="nav-link dropdown-toggle {{ request()->routeIs('getArticle') || request()->routeIs('getInformation') || request()->routeIs('detailArticle') || request()->routeIs('detailInformation') ? 'active' : '' }}" href="#" role="button" id="dropdown01" data-bs-toggle="dropdown"
                             aria-expanded="false">Pages</a>
                         <ul class="dropdown-menu" aria-labelledby="dropdown01">
                             <li>
-                                <a class="dropdown-item" href="{{ route('getArticle') }}">Article</a></li>
+                                <a class="dropdown-item {{ request()->routeIs('getArticle') ? 'active' : ''  }}" href="{{ route('getArticle') }}">Article</a></li>
                             <li>
                                 <div class="dropdown-divider"></div>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ route('getInformation') }}">Information</a></li>
+                                <a class="dropdown-item {{ request()->routeIs('getInformation') ? 'active' : '' }}" href="{{ route('getInformation') }}">Information</a></li>
                             <li>
                         </ul>
                     </li>
@@ -54,7 +54,7 @@
                             <!-- Dropdown - User Information -->
                             <ul class="dropdown-menu dropdown-menu-end shadow animated--grow-in"
                                 aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="#">
+                                <li><a class="dropdown-item" href="{{ route('user.profile') }}">
                                         <i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>
                                         Profile
                                     </a></li>

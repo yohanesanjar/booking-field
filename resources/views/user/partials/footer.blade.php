@@ -1,7 +1,7 @@
 <aside id="footer" class="footer-layout">
     <!-- Footer -->
     <div class="footer bg-gray">
-        <img class="decoration-city" src="images/decoration-city.svg" alt="alternative">
+        <img class="decoration-city" src="{{ asset('userLib2/images/decoration-city.svg') }}" alt="alternative">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">

@@ -11,13 +11,13 @@ class UserController extends Controller
     public function index()
     {
         $users = User::with('role')->get();
-        return view('admin.owner.users.index', compact('users'));
+        return view('admin.users.index', compact('users'));
     }
 
     public function create()
     {
         $roles = Role::all();
-        return view('admin.owner.users.create', compact('roles'));
+        return view('admin.users.create', compact('roles'));
     }
 
     public function store(Request $request)
@@ -27,6 +27,7 @@ class UserController extends Controller
             'username' => 'required|unique:users',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
+            'phone' => 'required|numeric|digits_between:10,13',
             'role' => 'required',
         ], [
             'name.required' => 'Nama lengkap harus diisi',
@@ -37,6 +38,9 @@ class UserController extends Controller
             'email.unique' => 'Email sudah terdaftar',
             'password.required' => 'Password harus diisi',
             'password.min' => 'Password minimal 6 karakter',
+            'phone.required' => 'Nomor telepon harus diisi',
+            'phone.numeric' => 'Nomor telepon harus berupa angka',
+            'phone.digits_between' => 'Nomor telepon harus 10-13 angka',
             'role.required' => 'Role harus dipilih',
         ]);
 
@@ -45,12 +49,13 @@ class UserController extends Controller
             'username' => $request->username,
             'email' => $request->email,
             'password' => bcrypt($request->password),
+            'phone' => $request->phone,
             'role_id' => $request->role,
         ]);
 
         if ($user) {
             session()->flash('success', 'Data user berhasil ditambahkan');
-            return redirect()->route('owner.userIndex');
+            return redirect()->route('admin.userIndex');
         }
     }
 
@@ -60,10 +65,10 @@ class UserController extends Controller
         $roles = Role::all();
 
         if (!$user) {
-            return view('admin.owner.404');
+            return view('admin.404');
         }
         
-        return view('admin.owner.users.edit', compact('user', 'roles'));
+        return view('admin.users.edit', compact('user', 'roles'));
     }
 
     public function update(Request $request, $id)
@@ -102,7 +107,7 @@ class UserController extends Controller
             $user->save();
 
             session()->flash('success', 'Data user berhasil diubah');
-            return redirect()->route('owner.userIndex');
+            return redirect()->route('admin.userIndex');
         } else {
             return redirect()->back()->with('error', 'User not found.');
         }
@@ -114,7 +119,7 @@ class UserController extends Controller
         if ($user) {
             $user->delete();
             session()->flash('success', 'Data user berhasil dihapus');
-            return redirect()->route('owner.userIndex');
+            return redirect()->route('admin.userIndex');
         } else {
             return redirect()->back()->with('error', 'User not found.');
         }
