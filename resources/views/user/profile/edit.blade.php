@@ -22,7 +22,7 @@
                             enctype="multipart/form-data">
                             @if ($profile->avatar == null)
                                 <img id="avatar-preview" style="height: 225px; width: 500px;"
-                                    src="{{ asset('userLib2/images/details-modal.jpg') }}" class="img-fluid rounded-circle"
+                                    src="{{ asset('img/undraw_profile.svg') }}" class="img-fluid rounded-circle"
                                     alt="{{ $profile->username }}">
                             @else
                                 <img id="avatar-preview" src="{{ asset('storage/' . $profile->avatar) }}" class="img-fluid rounded-circle"

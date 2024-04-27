@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\User;
 use App\Mail\ResetPassword;
+use App\Models\IndexData;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\PasswordResetToken;

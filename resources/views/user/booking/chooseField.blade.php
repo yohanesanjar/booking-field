@@ -35,7 +35,7 @@
                     @foreach ($fieldDatas as $data)
                         <div class="col-lg-4 mb-4">
                             <div class="card h-100 border-0 shadow-sm mb-2">
-                                <img class="card-img-top mb-2" src="{{ asset('storage/' . $data->thumbnail) }}"
+                                <img class="card-img-top p-2 rounded-4" src="{{ asset('storage/' . $data->thumbnail) }}"
                                     alt="" />
                                 <div class="card-body bg-light p-4">
                                     <h4 class="text-center">{{ $data->name }}</h4>
@@ -66,8 +66,10 @@
                                             </td>
                                         </tr>
                                     </table>
-                                    <div class="py-4">
-                                        <a href="{{ route('user.bookingCreate', $data->id) }}" class="btn-solid-small">Book
+                                    <div class="py-3">
+                                        <a style="position: absolute;
+                                        bottom: 15px;left: 50%;
+                                        transform: translateX(-50%);" href="{{ route('user.bookingCreate', $data->id) }}" class="btn-solid-small">Book
                                             Now</a>
                                     </div>
                                 </div>

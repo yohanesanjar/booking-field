@@ -27,9 +27,9 @@
                         enctype="multipart/form-data">
                         @csrf
                         <div class="row">
-                            <div class="col-md-6">
-                                <img src="{{ asset('storage/' . $fieldData->thumbnail) }}" class="img-fluid"
-                                    style="height: 200px; width: 550px" alt="{{ $fieldData->name }}">
+                            <div class="col-md-6 align-self-center">
+                                <img src="{{ asset('storage/' . $fieldData->thumbnail) }}" class="img-fluid rounded-4"
+                                    style="height: 250px; width: 550px" alt="{{ $fieldData->name }}">
                             </div>
                             <div class="col-md-6 p-3">
                                 <h4>{{ $fieldData->name }}</h4>
@@ -52,20 +52,21 @@
                         <hr style="border-top: 2px solid #000;">
                         @if ($fieldData->field_type == 'Bulu Tangkis')
                             <div class="form-group col-12 flex-column d-flex">
-                                <label for="">Notes</label>
+                                <label for=""><span class="text-danger"> *</span> Notes</label>
                                 <p>Jika ingin menjadi member anda harus memilih jam bermain selama 3 jam. Member akan
                                     bermain
                                     sebanyak 4 kali selama 1 bulan pada hari dan di jam yang telah dipilih. Harga bermain
                                     untuk
                                     member adalah Rp. 275.000</p>
                             </div>
-                            <div class="form-group col-12 flex-column d-flex ps-4">
+                            <div class="form-group col-12 d-flex align-items-center">
                                 <input class="form-check-input" type="checkbox" name="is_member" value="1"
                                     id="is_member">
-                                <label class="form-check-label" for="is_member">
-                                    Apakah anda ingin menjadi member
+                                <label class="form-check-label ms-2" for="is_member">
+                                    Saya ingin menjadi member
                                 </label>
                             </div>
+
                             <hr style="border-top: 2px solid #000;">
                         @endif
                         <input type="hidden" id="customer_name" name="customer_name" value="{{ Auth::user()->name }}">
@@ -143,7 +144,7 @@
                             if (schedule.is_active == 1) {
                                 var startTime = schedule.start_time.substring(0, 5);
                                 var endTime = schedule.end_time.substring(0, 5);
-                                var scheduleHtml = '<div class="col-4">';
+                                var scheduleHtml = '<div class="schedule col-4 px-1 py-1">';
                                 scheduleHtml +=
                                     '<input class="btn-check" type="checkbox" value="' +
                                     schedule.id +

@@ -21,6 +21,7 @@
                 <thead>
                     <tr>
                         <th></th>
+                        <th class="text-center" scope="col">Id Booking</th>
                         <th class="text-center" scope="col">Nama Pelanggan</th>
                         <th class="text-center" scope="col">Jadwal Bermain</th>
                         <th class="text-center" scope="col">Nama Lapangan</th>
@@ -34,8 +35,10 @@
                             <td class="text-center">
                                 <input type="checkbox" class="check" value="{{ $schedule->id }}">
                             </td>
+                            <td class="text-center">{{ $schedule->booking->id }}</td>
                             <td class="text-center">{{ $schedule->booking->customer_name }}</td>
-                            <td class="text-center">{{ $schedule->schedule_date }}</td>
+                            <td class="text-center">
+                                {{ \Carbon\Carbon::parse($schedule->schedule_date)->translatedFormat('l, d F Y') }}</td>
                             <td class="text-center">{{ $schedule->fieldData->name }}</td>
                             <td class="text-center">{{ $schedule->fieldData->field_type }}</td>
                             <td class="text-center">{{ $schedule->fieldSchedule->start_time }} -
@@ -51,8 +54,8 @@
 @section('script')
     <script>
         $(document).ready(function() {
-            // Event listener untuk checkbox
-            $('.check').change(function() {
+            // Event listener untuk checkbox di dalam DataTables
+            $('#myTable').on('change', '.check', function() {
                 var checkboxes = $('.check:checked'); // Ambil semua checkbox yang dicentang
 
                 // Periksa apakah setidaknya satu checkbox telah dipilih
@@ -100,7 +103,9 @@
                         $('.alert').remove(); // Hapus alert yang sudah ada jika ada
                         $('#jadwal').before(
                             '<div class="alert alert-danger d-flex justify-content-between align-items-center">' +
-                            (error.error || 'Schedule cannot be deleted because booking status is already paid') +
+                            (error.error ||
+                                'Schedule cannot be deleted because booking status is already paid'
+                            ) +
                             '<button type="button" class="btn-close flex-end" data-bs-dismiss="alert" aria-label="Close"></button></div>'
                         );
                         console.error(error); // Log error jika ada

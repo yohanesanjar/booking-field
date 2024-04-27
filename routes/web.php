@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\IndexController;
 use App\Http\Controllers\FieldsController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DashboardController;
@@ -111,19 +112,15 @@ Route::middleware(['auth', 'inactivityTimeout:1800'])->group(function () {
             Route::get('/profile', [AuthController::class, 'profile'])->name('admin.profile');
             Route::get('/profile/edit/{id}', [AuthController::class, 'editProfile'])->name('admin.editProfile');
             Route::put('/profile/update/{id}', [AuthController::class, 'updateProfile'])->name('admin.updateProfile');
+
+            // Index Data
+            Route::get('/index-data', [IndexController::class, 'indexData'])->name('admin.indexData');
+            Route::put('/index-data/update/{id}', [IndexController::class, 'updateIndexData'])->name('admin.updateIndexData');
         });
     });
     Route::middleware('role:user')->group(function () {
         Route::prefix('user')->group(function () {
-            Route::get('/home', function () {
-                $posts = Post::latest()->take(3)->get();
-                $categories = Post::select('category')->distinct()->pluck('category');
-                $countTransactions = Transaction::whereHas('booking', function ($query) {
-                    $query->where('booking_status', '>=', 2);
-                })->count();
-                $countUsers = User::count();
-                return view('user.index', compact('posts', 'categories', 'countUsers', 'countTransactions'));
-            })->name('user.index');
+            Route::get('/home', [IndexController::class, 'index'])->name('user.index');
             Route::get('/booking', [BookingController::class, 'chooseField'])->name('user.booking');
             Route::get('/booking/choose-field/{id}', [BookingController::class, 'create'])->name('user.bookingCreate');
             Route::get('/filter', [BookingController::class, 'checkAvailability'])->name('user.checkAvailability');

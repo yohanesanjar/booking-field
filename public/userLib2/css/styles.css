@@ -365,11 +365,11 @@ select {
 .navbar .navbar-brand {
 	padding-top: 0.25rem;
 	padding-bottom: 0.25rem;
+	text-decoration: none;
 }
 
 .navbar .logo-image img {
-    width: 133px;
-	height: 30px;
+    width: 4rem;
 }
 
 .navbar .logo-text {
@@ -968,8 +968,8 @@ select {
 /*     Contact     */
 /*******************/
 .form-1 {
-	padding-top: 9.25rem;
-	padding-bottom: 8.5rem;
+	padding-top: 5.25rem;
+	padding-bottom: 3.5rem;
 	text-align: center;
 }
 
@@ -1465,7 +1465,7 @@ select {
 	}
 
 	.copyright .statement {
-		text-align: right;
+		text-align: left;
 	}
 	/* end of copyright */
 

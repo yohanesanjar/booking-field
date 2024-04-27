@@ -36,7 +36,7 @@
                         <tr>
                             <td class="text-center">{{ $booking->id }}</td>
                             <td class="text-center">{{ $booking->customer_name }}</td>
-                            <td class="text-center">{{ $booking->created_at }}</td>
+                            <td class="text-center">{{ $booking->created_at->translatedFormat('l, d F Y') }}</td>
                             <td class="text-center">{{ $booking->fieldData->name }}</td>
                             <td class="text-center">{{ $booking->fieldData->field_type }}</td>
                             <td class="text-center">Rp {{ number_format($booking->total_subtotal, 0, ',', '.') }}</td>
@@ -65,12 +65,38 @@
                                         <div class="modal-dialog modal-lg">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <h1 class="modal-title fs-5" id="detailModal{{ $booking->id }}">
-                                                        {{ $booking->id }} |
-                                                        {{ explode(' ', $booking->customer_name)[0] }}
-                                                    </h1>
+                                                    <div class="row">
+                                                        <div class="col-md-9">
+                                                            <h1 class="modal-title fs-5"
+                                                                id="detailModal{{ $booking->id }}">
+                                                                {{ $booking->id }} |
+                                                                {{ $booking->customer_name }}
+                                                            </h1>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            @if ($booking->booking_status == 0)
+                                                                <span class="badge text-bg-danger text-white">Tidak
+                                                                    valid</span>
+                                                            @elseif($booking->booking_status == 1)
+                                                                <span class="badge text-bg-warning text-white">Butuh
+                                                                    konfirmasi</span>
+                                                            @elseif($booking->booking_status == 2)
+                                                                <span class="badge text-bg-primary text-white">Sudah bayar
+                                                                    DP</span>
+                                                            @elseif($booking->booking_status == 3)
+                                                                <span
+                                                                    class="badge text-bg-secondary text-white">Dibatalkan</span>
+                                                            @elseif($booking->booking_status == 4)
+                                                                <span class="badge text-bg-success text-white">Lunas</span>
+                                                            @elseif($booking->booking_status == -1)
+                                                                <span style="background-color:saddlebrown"
+                                                                    class="badge text-white">Tunggu</span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                         aria-label="Close"></button>
+
                                                 </div>
                                                 <div class="modal-body">
                                                     <div class="row mb-2">
@@ -173,40 +199,77 @@
                                                             </table>
                                                         </div>
                                                     </div>
-                                                    <div class="row mb-2">
-                                                        <div class="col text-start">
-                                                            <label for="message-text" class="col-label">DP:</label>
-                                                            <p>Rp.
-                                                                {{ number_format($booking->transactions->first()->down_payment, 0, ',', '.') }}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row mb-2">
-                                                        <div class="col text-start">
-                                                            <label for="message-text" class="col-label">Metode
-                                                                Pembayaran:</label>
-                                                            <p>{{ $booking->transactions->first()->paymentMethodDP->name }}
-                                                            </p>
-                                                        </div>
-                                                        @if ($booking->transactions->first()->paymentMethodDP->id != 1)
+                                                    @if ($booking->booking_status != 0)
+                                                        <div class="row mb-2">
                                                             <div class="col text-start">
-                                                                <label for="payment_proof" class="col-label">Bukti
-                                                                    Pembayaran<span class="text-danger">
-                                                                        *</span></label>
-                                                                <div>
-                                                                    <img class="pb-3"
-                                                                        src="{{ asset('storage/' . $booking->transactions->first()->payment_proof_dp) }}"
-                                                                        id="payment-proof"style="width: 100px;">
-                                                                </div>
-                                                            </div>
-                                                            <div class="col text-start">
-                                                                <label for="message-text" class="col-label">Nama
-                                                                    Akun:</label>
-                                                                <p>{{ $booking->transactions->first()->account_name_dp }}
+                                                                <label for="message-text" class="col-label">DP:</label>
+                                                                <p>Rp.
+                                                                    {{ number_format($booking->transactions->first()->down_payment, 0, ',', '.') }}
                                                                 </p>
                                                             </div>
-                                                        @endif
-                                                    </div>
+                                                        </div>
+                                                        <div class="row mb-2">
+                                                            <div class="col text-start">
+                                                                <label for="message-text" class="col-label">Metode
+                                                                    Pembayaran:</label>
+                                                                <p>{{ $booking->transactions->first()->paymentMethodDP->name }}
+                                                                </p>
+                                                            </div>
+                                                            @if ($booking->transactions->first()->paymentMethodDP->id != 1)
+                                                                <div class="col text-start">
+                                                                    <label for="payment_proof" class="col-label">Bukti
+                                                                        Pembayaran:</label>
+                                                                    <div>
+                                                                        <img class="pb-3"
+                                                                            src="{{ asset('storage/' . $booking->transactions->first()->payment_proof_dp) }}"
+                                                                            id="payment-proof"style="width: 100px;">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col text-start">
+                                                                    <label for="message-text" class="col-label">Nama
+                                                                        Akun:</label>
+                                                                    <p>{{ $booking->transactions->first()->account_name_dp }}
+                                                                    </p>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    @endif
+                                                    @if ($booking->booking_status == 4 && $booking->transactions->first()->payment_method_remaining != null)
+                                                        <div class="row mb-2">
+                                                            <div class="col text-start">
+                                                                <label for="message-text" class="col-label">Sisa
+                                                                    Pembayaran:</label>
+                                                                <p>Rp.
+                                                                    {{ number_format($booking->transactions->first()->remaining_payment, 0, ',', '.') }}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mb-2">
+                                                            <div class="col text-start">
+                                                                <label for="message-text" class="col-label">Metode
+                                                                    Pembayaran:</label>
+                                                                <p>{{ $booking->transactions->first()->paymentMethodRemaining->name }}
+                                                                </p>
+                                                            </div>
+                                                            @if ($booking->transactions->first()->paymentMethodRemaining->id != 1)
+                                                                <div class="col text-start">
+                                                                    <label for="payment_proof" class="col-label">Bukti
+                                                                        Pembayaran:</label>
+                                                                    <div>
+                                                                        <img class="pb-3"
+                                                                            src="{{ asset('storage/' . $booking->transactions->first()->payment_proof_remaining) }}"
+                                                                            id="payment-proof"style="width: 100px;">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col text-start">
+                                                                    <label for="message-text" class="col-label">Nama
+                                                                        Akun:</label>
+                                                                    <p>{{ $booking->transactions->first()->account_name_remaining }}
+                                                                    </p>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    @endif
                                                 </div>
 
                                                 <div class="modal-footer">
@@ -309,7 +372,8 @@
                                                             </div>
                                                         </div>
                                                         <div class="modal-footer">
-                                                            <button type="submit" class="btn btn-primary">Konfirmasi</button>
+                                                            <button type="submit"
+                                                                class="btn btn-primary">Konfirmasi</button>
                                                             <button type="button" class="btn btn-secondary"
                                                                 data-bs-dismiss="modal">Close</button>
                                                         </div>

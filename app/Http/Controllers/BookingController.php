@@ -2,27 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Booking;
-use App\Models\BookingDetail;
-use App\Models\User;
-use App\Models\FieldData;
-use App\Models\FieldSchedule;
-use App\Models\PaymentMethod;
-use App\Models\ScheduleAvailability;
-use App\Models\Transaction;
 use Carbon\Carbon;
 use Dompdf\Dompdf;
 use Dompdf\Options;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
+use App\Models\User;
+use App\Models\Booking;
+use App\Models\FieldData;
+use App\Mail\ValidPayment;
+use App\Models\Transaction;
+use Illuminate\Http\Request;
+use App\Models\BookingDetail;
+use App\Models\FieldSchedule;
+use App\Models\PaymentMethod;
+use App\Mail\InvalidatePayment;
 use App\Mail\ConfirmationBooking;
+use Illuminate\Support\Facades\DB;
+use App\Models\ScheduleAvailability;
+use Illuminate\Support\Facades\Mail;
 
 class BookingController extends Controller
 {
     public function index()
     {
-        $bookings = Booking::with('bookingDetails', 'fieldData', 'transactions.paymentMethodDP')
+        $bookings = Booking::with('bookingDetails', 'fieldData', 'transactions.paymentMethodDP', 'transactions.paymentMethodRemaining')
             ->orderBy('id', 'desc')
             ->latest() // Jika id adalah timestamp Unix, Anda bisa menggunakan metode latest()
             ->get();
@@ -230,6 +232,10 @@ class BookingController extends Controller
     {
         $user = auth()->user();
         $bookingData = session('booking_data');
+        if(!$bookingData){
+            return abort(403);
+        }
+
         $paymentProofPath = null; // Inisialisasi variable
 
         // Validasi input berdasarkan kondisi
@@ -419,9 +425,7 @@ class BookingController extends Controller
                 $recipients = User::where('role_id', 1)
                     ->pluck('email');
 
-                $roleName = User::where('role_id', 1)->get();
-
-                Mail::to($recipients)->send(new ConfirmationBooking($transaction, $roleName));
+                Mail::to($recipients)->send(new ConfirmationBooking($transaction));
                 return redirect()->route('user.noticeTransaction', $transaction->id);
             }
         }
@@ -460,7 +464,7 @@ class BookingController extends Controller
             'account_name.required' => 'Nama harus diisi',
         ]);
 
-        $transaction = Transaction::find($id);
+        $transaction = Transaction::with('paymentMethodDP', 'booking.fieldData')->find($id);
         $paymentProofPath = $request->file('payment_proof')->store('payment-proofs', 'public');
         $transaction->update([
             'payment_proof_dp' => $paymentProofPath,
@@ -474,11 +478,8 @@ class BookingController extends Controller
         $recipients = User::where('role_id', 1)
             ->pluck('email');
 
-        $getRole = User::with('role')->where('role_id', 1)->get();
-        $roleName = $getRole->role->name;
-        Mail::to($recipients)->send(new ConfirmationBooking($transaction, $roleName));
-        // Redirect ke halaman pemberitahuan transaksi sedang diproses
-        return redirect()->route('user.noticeTransaction', $id);
+        Mail::to($recipients)->send(new ConfirmationBooking($transaction));
+        return redirect()->route('user.noticeTransaction', $transaction->id);
     }
 
     public function noticeTransaction($id)
@@ -498,7 +499,7 @@ class BookingController extends Controller
 
     public function confirmPaymentDP($id)
     {
-        $booking = Booking::find($id);
+        $booking = Booking::with('transactions')->find($id);
         if ($booking->is_member == 1) {
             $booking->update([
                 'booking_status' => 4,
@@ -509,6 +510,11 @@ class BookingController extends Controller
             ]);
         }
 
+        $recipients = User::where('id', $booking->transactions->first()->user_id)
+            ->pluck('email');
+
+        Mail::to($recipients)->send(new ValidPayment($booking));
+
         session()->flash('success', 'Data booking berhasil diperbarui');
         // Redirect pengguna ke halaman transaksi
         return redirect()->route('admin.bookingIndex');
@@ -516,13 +522,17 @@ class BookingController extends Controller
 
     public function invalidatePaymentDP($id)
     {
-        $booking = Booking::find($id);
+        $booking = Booking::with('transactions')->find($id);
         $booking->update([
             'booking_status' => 0,
         ]);
 
+        $recipients = User::where('id', $booking->transactions->first()->user_id)
+            ->pluck('email');
+
+        Mail::to($recipients)->send(new InvalidatePayment($booking));
+
         session()->flash('success', 'Data booking berhasil diperbarui');
-        // Redirect pengguna ke halaman transaksi
         return redirect()->route('admin.bookingIndex');
     }
 
@@ -567,7 +577,7 @@ class BookingController extends Controller
             $paymentProofPath = null;
         }
 
-        if ($request->payment_method == !1) {
+        if ($request->payment_method != 1) {
             $account_name_remaining = $request->account_name;
         } else {
             $account_name_remaining = null;

@@ -9,18 +9,17 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ConfirmationBooking extends Mailable
+class InvalidatePayment extends Mailable
 {
     use Queueable, SerializesModels;
-
-    public $transaction;
+    public $booking;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($transaction)
+    public function __construct($booking)
     {
-        $this->transaction = $transaction;
+        $this->booking = $booking;
     }
 
     /**
@@ -29,7 +28,7 @@ class ConfirmationBooking extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Konfirmasi Booking',
+            subject: 'Invalidate Payment',
         );
     }
 
@@ -39,7 +38,7 @@ class ConfirmationBooking extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.confirmation-booking',
+            view: 'mail.invalid-payment',
         );
     }
 

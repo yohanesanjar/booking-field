@@ -5,9 +5,7 @@
 
             <!-- Image Logo -->
             <a class="navbar-brand logo-image" href="{{ route('index') }}"><img
-                    src="{{ asset('userLib2/images/logo.svg') }}" alt="alternative"></a>
-
-            <!-- Text Logo - Use this if you don't have a graphic logo -->
+                    src="{{ asset('img/JAS_NoBg.png') }}" alt="alternative">Jaya Abadi Sports</a>
             <!-- <a class="navbar-brand logo-text" href="index.html">Zinc</a> -->
 
             <button class="navbar-toggler p-0 border-0" type="button" id="navbarSideCollapse"
@@ -38,9 +36,6 @@
                             <li>
                         </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#projects">About Us</a>
-                    </li>
                     @if (Auth::check())
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown">
@@ -48,8 +43,6 @@
                                 aria-expanded="false">
                                 <span
                                     class="me-2 d-none d-lg-inline text-gray-600">{{ Auth::user()->username }}</span>
-                                {{-- <img class="img-profile rounded-circle" src="{{ asset('img/undraw_profile.svg') }}" style="height: 2rem; width: 2rem;"
-                                alt="Profile Picture"> --}}
                             </a>
                             <!-- Dropdown - User Information -->
                             <ul class="dropdown-menu dropdown-menu-end shadow animated--grow-in"

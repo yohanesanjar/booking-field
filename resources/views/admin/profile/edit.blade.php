@@ -12,11 +12,13 @@
                     <form class="user" action="{{ route('admin.updateProfile', $profile->id) }}" method="POST"
                         enctype="multipart/form-data">
                         @if ($profile->avatar == null)
-                            <img style="height: 21rem; width: 30rem" id="avatar-preview" src="{{ asset('userLib2/images/details-modal.jpg') }}"
-                                class="img-fluid rounded-circle" alt="{{ $profile->username }}">
+                            <img style="height: 21rem; width: 30rem" id="avatar-preview"
+                                src="{{ asset('img/undraw_profile.svg') }}" class="img-fluid rounded-circle"
+                                alt="{{ $profile->username }}">
                         @else
-                            <img style="height: 21rem; width: 30rem" id="avatar-preview" src="{{ asset('storage/' . $profile->avatar) }}"
-                                class="img-fluid rounded-circle" alt="{{ $profile->username }}">
+                            <img style="height: 21rem; width: 30rem" id="avatar-preview"
+                                src="{{ asset('storage/' . $profile->avatar) }}" class="img-fluid rounded-circle"
+                                alt="{{ $profile->username }}">
                         @endif
                         <div class="mt-3">
                             <input type="file" name="avatar" class="form-control-file" onchange="previewAvatar(this)">

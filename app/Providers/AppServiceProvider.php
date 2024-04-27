@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\IndexData;
 use Illuminate\Support\ServiceProvider;
 use Carbon\Carbon;
 use Illuminate\Pagination\Paginator;
@@ -24,5 +25,9 @@ class AppServiceProvider extends ServiceProvider
         config(['app.locale' => 'id']);
         Carbon::setLocale('id');
         Paginator::useBootstrap();
+        view()->composer('*', function ($view) {
+            $data = IndexData::first();
+            $view->with('data', $data);
+        });
     }
 }

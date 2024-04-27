@@ -76,7 +76,7 @@
                         <th class="text-center">Nama Lapangan</th>
                         <th class="text-center">Jenis Lapangan</th>
                         <th class="text-center">Total Pembayaran</th>
-                        <th class="text-center">Sudah Bayar</th>
+                        <th class="text-center">Pembayaran Berhasil</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -85,7 +85,7 @@
                             <td class="text-center">{{ $transaction->id }}</td>
                             <td class="text-center">{{ $transaction->booking_id }}</td>
                             <td class="text-center">{{ $transaction->booking->customer_name }}</td>
-                            <td class="text-center">{{ $transaction->created_at }}</td>
+                            <td class="text-center">{{ $transaction->created_at->translatedFormat('l, d F Y') }}</td>
                             <td class="text-center">{{ $transaction->booking->fieldData->name }}</td>
                             <td class="text-center">{{ $transaction->booking->fieldData->field_type }}</td>
                             <td class="text-center"><span class="badge text-bg-primary text-white">Rp.
@@ -192,24 +192,33 @@
                                     data: 'booking.total_subtotal',
                                     className: 'text-center',
                                     render: function(data, type, row) {
+                                        var totalSubtotal = row.booking.total_subtotal;
                                         // Menggunakan number_format untuk format Rupiah tanpa koma
-                                        var formattedTotal = 'Rp ' + Number(data)
-                                            .toLocaleString('id-ID', {
-                                                minimumFractionDigits: 0
-                                            });
-                                        return formattedTotal;
+                                        var formattedTotalSubtotal =
+                                            '<span class="badge text-bg-primary text-white">Rp. ' +
+                                            Number(totalSubtotal).toLocaleString(
+                                                'id-ID', {
+                                                    minimumFractionDigits: 0
+                                                }) + '</span>';
+                                        return formattedTotalSubtotal;
                                     }
                                 },
                                 {
                                     data: 'total_payment',
                                     className: 'text-center',
                                     render: function(data, type, row) {
-                                        // Menggunakan number_format untuk format Rupiah tanpa koma
-                                        var formattedTotal = 'Rp ' + Number(data)
-                                            .toLocaleString('id-ID', {
+                                        var totalPayment = row.total_payment;
+
+                                        // Membuat sebuah elemen span dengan nilai yang diambil dari kolom data
+                                        var formattedTotalPayment =
+                                            '<span class="badge text-bg-success text-white">Rp. ' +
+                                            Number(totalPayment).toLocaleString(
+                                            'id-ID', {
                                                 minimumFractionDigits: 0
-                                            });
-                                        return formattedTotal;
+                                            }) + '</span>';
+
+                                        // Mengembalikan HTML yang sudah diformat
+                                        return formattedTotalPayment;
                                     }
                                 },
                             ],

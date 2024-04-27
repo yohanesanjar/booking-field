@@ -19,7 +19,7 @@
                 <div class="row g-0">
                     <div class="col-md-4 align-self-center">
                         @if ($profile->avatar == null)
-                            <img id="avatar-preview" src="{{ asset('userLib2/images/details-modal.jpg') }}"
+                            <img id="avatar-preview" src="{{ asset('img/undraw_profile.svg') }}"
                                 class="img-fluid rounded-circle" alt="{{ $profile->username }}">
                         @else
                             <img id="avatar-preview" src="{{ asset('storage/' . $profile->avatar) }}"

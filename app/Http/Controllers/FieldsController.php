@@ -176,6 +176,8 @@ class FieldsController extends Controller
             ->whereHas('booking', function ($query) {
                 $query->where('is_member', 0);
             })
+            ->orderBy('id', 'desc')
+            ->latest() // Jika id adalah timestamp Unix, Anda bisa menggunakan metode latest()
             ->get();
         return view('admin.fields.schedule.scheduleActive', compact('scheduleAvailable'));
     }

@@ -22,13 +22,13 @@
                 <table class="table table-hover text-nowrap" id="myTable" style="width: 100%">
                     <thead>
                         <tr>
-                            <th class="text-center">Invoice Number</th>
-                            <th class="text-center">Field Name</th>
-                            <th class="text-center">Field Type</th>
-                            <th class="text-center">Transaction Date</th>
+                            <th class="text-center">No. Invoice</th>
+                            <th class="text-center">Nama Lapangan</th>
+                            <th class="text-center">Jenis Lapangan</th>
+                            <th class="text-center">Tanggal Pemesanan</th>
                             <th class="text-center">Status</th>
-                            <th class="text-center">Total Price</th>
-                            <th class="text-center">Action</th>
+                            <th class="text-center">Total Harga</th>
+                            <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -37,7 +37,7 @@
                                 <td class="text-center">{{ $transaction->id }}</td>
                                 <td class="text-center">{{ $transaction->booking->fieldData->name }}</td>
                                 <td class="text-center">{{ $transaction->booking->fieldData->field_type }}</td>
-                                <td class="text-center">{{ $transaction->created_at }}</td>
+                                <td class="text-center">{{ $transaction->created_at->translatedFormat('l, d F Y') }}</td>
                                 <td class="text-center">
                                     @if ($transaction->booking->booking_status == 0)
                                         <span class="badge text-bg-danger text-white">Invalid</span>
@@ -56,8 +56,7 @@
                                 <td class="text-center">Rp. {{ number_format($transaction->booking->total_subtotal, 0, ',', '.') }}</td>
                                 <td class="text-center">
                                     <a href="{{ route('user.transactionHistoryDetail', $transaction->id) }}"
-                                        class="btn btn-sm btn-primary text-white" data-bs-toggle="tooltip" data-bs-placement="top"
-                                        data-bs-title="Detail">Lihat</a>
+                                        class="btn btn-sm btn-primary">Lihat</a>
                                     @if ($transaction->booking->booking_status == -1)
                                         <a href="{{ route('user.paymentTransaction', $transaction->id) }}"
                                             data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit" style="background-color:saddlebrown"

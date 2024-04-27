@@ -14,18 +14,11 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UserSeeder::class,
-        ]);
-        $this->call([
             RoleSeeder::class,
-        ]);
-        $this->call([
             ScheduleSeeder::class,
-        ]);
-        $this->call([
             FieldDataSeeder::class,
-        ]);
-        $this->call([
             PaymentMethodSeeder::class,
+            IndexDataSeeder::class,
         ]);
     }
 }

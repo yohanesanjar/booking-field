@@ -55,9 +55,9 @@
                                                 </div>
                                                 <div class="modal-body">
                                                     <div class="row mb-2">
-                                                        <div class="col">
+                                                        <div class="col justify-content-center">
                                                             <img src="{{ asset('storage/' . $data->thumbnail) }}"
-                                                                style="width: 150px" alt="{{ $data->thumbnail }}">
+                                                                style="width: 60%; height: 80%" alt="{{ $data->thumbnail }}">
                                                         </div>
                                                     </div>
                                                     <div class="row mb-2">

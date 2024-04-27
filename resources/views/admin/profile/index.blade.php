@@ -9,11 +9,12 @@
             <div class="row g-0">
                 <div class="col-md-4 align-self-center">
                     @if ($profile->avatar == null)
-                        <img style="height: 21rem; width: 30rem" id="avatar-check" src="{{ asset('userLib2/images/details-modal.jpg') }}"
+                        <img style="height: 21rem; width: 30rem" id="avatar-check" src="{{ asset('img/undraw_profile.svg') }}"
                             class="avatar-check img-fluid rounded-circle" alt="{{ $profile->username }}">
                     @else
-                        <img style="height: 21rem; width: 30rem" id="avatar-preview" src="{{ asset('storage/' . $profile->avatar) }}"
-                            class="avatar-check img-fluid rounded-circle" alt="{{ $profile->username }}">
+                        <img style="height: 21rem; width: 30rem" id="avatar-preview"
+                            src="{{ asset('storage/' . $profile->avatar) }}" class="avatar-check img-fluid rounded-circle"
+                            alt="{{ $profile->username }}">
                     @endif
                 </div>
                 <div class="col-md-8">
