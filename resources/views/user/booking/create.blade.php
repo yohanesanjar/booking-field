@@ -1,18 +1,18 @@
 @extends('user.layouts.main')
 
 @section('content')
-    <div class="container pt-4">
-        <!-- Header -->
-        <header class="ex-header">
-            <div class="container">
-                <div class="row">
-                    <div class="col-xl-10 offset-xl-1">
-                        <h1>Booking</h1>
-                    </div> <!-- end of col -->
-                </div> <!-- end of row -->
-            </div> <!-- end of container -->
-        </header> <!-- end of ex-header -->
-        <!-- end of header -->
+    <!-- Header -->
+    <header class="ex-header">
+        <div class="container">
+            <div class="row">
+                <div class="col-xl-10 offset-xl-1">
+                    <h1>Booking</h1>
+                </div> <!-- end of col -->
+            </div> <!-- end of row -->
+        </div> <!-- end of container -->
+    </header> <!-- end of ex-header -->
+    <!-- end of header -->
+    <div class="container py-3">
         @if (session('error'))
             <div class="alert alert-danger d-flex justify-content-between align-items-center">
                 {{ session('error') }}

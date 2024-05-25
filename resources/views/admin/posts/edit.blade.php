@@ -29,7 +29,7 @@
                             <select class="form-select @error('category') is-invalid @enderror" aria-label="category"
                                 id="category" name="category">
                                 <option selected disabled>- Pilih kategori -</option>
-                                <option value="Article" {{ $post->category == 'Artikel' ? 'selected' : '' }}>Artikel
+                                <option value="Artikel" {{ $post->category == 'Artikel' ? 'selected' : '' }}>Artikel
                                 </option>
                                 <option value="Informasi" {{ $post->category == 'Informasi' ? 'selected' : '' }}>
                                     Informasi

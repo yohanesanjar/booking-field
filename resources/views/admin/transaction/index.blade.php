@@ -75,8 +75,9 @@
                         <th class="text-center">Tanggal Transaksi</th>
                         <th class="text-center">Nama Lapangan</th>
                         <th class="text-center">Jenis Lapangan</th>
-                        <th class="text-center">Total Pembayaran</th>
+                        <th class="text-center">Total yang Harus Dibayar</th>
                         <th class="text-center">Pembayaran Berhasil</th>
+                        <th class="text-center">Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -88,11 +89,12 @@
                             <td class="text-center">{{ $transaction->created_at->translatedFormat('l, d F Y') }}</td>
                             <td class="text-center">{{ $transaction->booking->fieldData->name }}</td>
                             <td class="text-center">{{ $transaction->booking->fieldData->field_type }}</td>
-                            <td class="text-center"><span class="badge text-bg-primary text-white">Rp.
+                            <td class="text-center"><span class="badge text-bg-warning text-white">Rp.
                                     {{ number_format($transaction->booking->total_subtotal, 0, ',', '.') }}</span></td>
-                            <td class="text-center"><span class="badge text-bg-success text-white">Rp
+                            <td class="text-center"><span class="badge text-bg-primary text-white">Rp
                                     {{ number_format($transaction->total_payment, 0, ',', '.') }}</span>
                             </td>
+                            <td class="text-center"><span class="badge text-bg-{{ $transaction->bg_color }}">{{ $transaction->status }}</span></td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -195,7 +197,7 @@
                                         var totalSubtotal = row.booking.total_subtotal;
                                         // Menggunakan number_format untuk format Rupiah tanpa koma
                                         var formattedTotalSubtotal =
-                                            '<span class="badge text-bg-primary text-white">Rp. ' +
+                                            '<span class="badge text-bg-warning text-white">Rp. ' +
                                             Number(totalSubtotal).toLocaleString(
                                                 'id-ID', {
                                                     minimumFractionDigits: 0
@@ -211,7 +213,7 @@
 
                                         // Membuat sebuah elemen span dengan nilai yang diambil dari kolom data
                                         var formattedTotalPayment =
-                                            '<span class="badge text-bg-success text-white">Rp. ' +
+                                            '<span class="badge text-bg-primary text-white">Rp. ' +
                                             Number(totalPayment).toLocaleString(
                                             'id-ID', {
                                                 minimumFractionDigits: 0
@@ -219,6 +221,15 @@
 
                                         // Mengembalikan HTML yang sudah diformat
                                         return formattedTotalPayment;
+                                    }
+                                },
+                                {
+                                    data: 'status',
+                                    className: 'text-center',
+                                    render: function(data, type, row) {
+                                        var bg = row.bg_color;
+                                        return '<span class="badge text-bg-' + bg + ' text-white">' +
+                                            data + '</span>';
                                     }
                                 },
                             ],

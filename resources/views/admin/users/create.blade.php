@@ -45,6 +45,17 @@
                     </div>
                     <div class="row justify-content-between text-left">
                         <div class="form-group col-12 flex-column d-flex">
+                            <label class="form-control-label">No. HP<span class="text-danger"> *</span>
+                            </label>
+                            <input type="number" id="phone" name="phone" value="{{ old('phone') }}"
+                                placeholder="Masukkan phone" min="0">
+                            @error('phone')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="row justify-content-between text-left">
+                        <div class="form-group col-12 flex-column d-flex">
                             <label class="form-control-label">Password<span class="text-danger"> *</span>
                             </label>
                             <input type="password" id="password" name="password" value="{{ old('password') }}"
@@ -67,16 +78,6 @@
                                 @endforeach
                             </select>
                             @error('role')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="row justify-content-between text-left">
-                        <div class="form-group col-12 flex-column d-flex">
-                            <label class="form-control-label">Thumbnail<span class="text-danger"> *</span>
-                            </label>
-                            <input class="form-control" type="file" name="thumbnail" id="thumbnail">
-                            @error('thumbnail')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>

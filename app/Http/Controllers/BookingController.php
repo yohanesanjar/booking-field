@@ -232,8 +232,13 @@ class BookingController extends Controller
     {
         $user = auth()->user();
         $bookingData = session('booking_data');
-        if(!$bookingData){
+        if (!$bookingData) {
             return abort(403);
+        }
+
+        $totalAfterDiscount = $bookingData['total_after_discount'] - $request->discount;
+        if ($request->down_payment > $bookingData['total_after_discount'] || $request->down_payment > $totalAfterDiscount) {
+            return back()->with('error', 'Nominal DP melebihi total yang harus dibayarkan');
         }
 
         $paymentProofPath = null; // Inisialisasi variable
@@ -248,10 +253,11 @@ class BookingController extends Controller
         } else {
             $request->validate([
                 'payment_method' => 'required',
-                'down_payment' => 'required',
+                'down_payment' => 'required|numeric|min:10000',
             ], [
                 'payment_method.required' => 'Pilih metode pembayaran',
                 'down_payment.required' => 'Masukkan nominal dp',
+                'down_payment.min' => 'Pembayaran DP minimal Rp. 10.000',
             ]);
         }
 
@@ -610,6 +616,7 @@ class BookingController extends Controller
 
         // Array untuk menyimpan total untuk setiap PaymentMethod
         $totals = [];
+        $totalTransaction = 0;
 
         // Menghitung total down_payment dan remaining_payment untuk setiap PaymentMethod
         foreach ($paymentMethods as $paymentMethod) {
@@ -624,27 +631,32 @@ class BookingController extends Controller
             $totalRemainingPayment = Transaction::where('payment_method_remaining', $paymentMethod->id)
                 ->whereHas('booking', function ($query) use ($startDate, $endDate) {
                     $query->where('booking_status', '>=', 2)
-                        ->whereBetween('created_at', [$startDate, $endDate]);
+                        ->whereBetween('updated_at', [$startDate, $endDate]);
                 })->sum('remaining_payment');
 
             // Total untuk PaymentMethod saat ini
             $totals[$paymentMethod->name] = $totalDownPayment + $totalRemainingPayment;
+            $totalTransaction += $totalDownPayment + $totalRemainingPayment;
         }
 
         $transactions = Transaction::join('bookings', 'transactions.booking_id', '=', 'bookings.id')
             ->join('field_data', 'bookings.field_data_id', '=', 'field_data.id')
             ->select('transactions.*')
-            ->whereHas('booking', function ($query) use ($startDate, $endDate) {
-                $query->where('booking_status', '>=', 2)
-                    ->whereBetween('created_at', [$startDate, $endDate]);
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->whereHas('booking', function ($query) {
+                    $query->where('bookings.booking_status', '>=', 2);
+                })
+                    ->where(function ($query) use ($startDate, $endDate) {
+                        $query->whereBetween('bookings.created_at', [$startDate, $endDate])
+                            ->orWhereBetween('bookings.updated_at', [$startDate, $endDate]);
+                    });
             })
             ->orderBy(DB::raw('(SELECT field_type FROM field_data WHERE id = bookings.field_data_id)'))
             ->orderBy(DB::raw('(SELECT name FROM field_data WHERE id = bookings.field_data_id)'))
             ->with('booking.fieldData')
             ->get();
 
-        $totalTransaction = 0;
-        // Menghitung total pembayaran untuk setiap transaksi
+
         foreach ($transactions as $transaction) {
             // Mengambil down payment dari transaksi pertama
             $downPayment = $transaction->down_payment;
@@ -652,11 +664,52 @@ class BookingController extends Controller
             // Mengambil remaining payment dari transaksi pertama
             $remainingPayment = $transaction->remaining_payment;
 
-            // Menyimpan total pembayaran ke dalam atribut baru di dalam objek transaksi
-            $transaction->total_payment = $downPayment + $remainingPayment;
+            $dateStart = $startDate->format('Y-m-d');
+            $dateEnd = $endDate->format('Y-m-d');
 
-            // Menambahkan total pembayaran ke total transaksi keseluruhan
-            $totalTransaction += $transaction->total_payment;
+            $forDP = $transaction->created_at->format('Y-m-d') == $dateStart &&  $transaction->created_at->format('Y-m-d') == $dateEnd;
+            $forRemaining = $transaction->updated_at->format('Y-m-d') == $dateStart &&  $transaction->updated_at->format('Y-m-d') == $dateEnd;
+
+            $createdAt = $transaction->created_at->format('Y-m-d');
+            $updatedAt = $transaction->updated_at->format('Y-m-d');
+
+            if ($transaction->booking->booking_status == 2) {
+                $transaction->total_payment = $downPayment;
+                $transaction->status = 'Bayar DP';
+                $transaction->bg_color = 'primary';
+            } elseif ($transaction->booking->booking_status == 3) {
+                $transaction->total_payment = $downPayment;
+                $transaction->status = 'Batal';
+                $transaction->bg_color = 'secondary';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt != $updatedAt && $forDP) {
+                $transaction->total_payment = $downPayment;
+                $transaction->status = 'Bayar DP';
+                $transaction->bg_color = 'primary';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt != $updatedAt && $forRemaining) {
+                $transaction->total_payment = $remainingPayment;
+                $transaction->status = 'Pelunasan';
+                $transaction->bg_color = 'success';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt != $updatedAt && $dateStart != $dateEnd && $dateEnd == $createdAt) {
+                $transaction->total_payment = $downPayment;
+                $transaction->status = 'Bayar DP';
+                $transaction->bg_color = 'primary';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt != $updatedAt && $dateStart != $dateEnd && $dateStart == $updatedAt) {
+                $transaction->total_payment = $remainingPayment;
+                $transaction->status = 'Pelunasan';
+                $transaction->bg_color = 'success';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt != $updatedAt && $dateStart != $dateEnd) {
+                $transaction->total_payment = $downPayment + $remainingPayment;
+                $transaction->status = 'Lunas';
+                $transaction->bg_color = 'success';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt == $updatedAt && $dateStart == $dateEnd) {
+                $transaction->total_payment = $downPayment + $remainingPayment;
+                $transaction->status = 'Pembayaran Lunas';
+                $transaction->bg_color = 'success';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt == $updatedAt && $dateStart != $dateEnd) {
+                $transaction->total_payment = $downPayment + $remainingPayment;
+                $transaction->status = 'Lunas';
+                $transaction->bg_color = 'success';
+            }
         }
 
         return view('admin.transaction.index', compact('transactions', 'startDate', 'endDate', 'totals', 'totalTransaction'));
@@ -671,6 +724,7 @@ class BookingController extends Controller
 
         // Array untuk menyimpan total untuk setiap PaymentMethod
         $totals = [];
+        $totalTransaction = 0;
 
         // Menghitung total down_payment dan remaining_payment untuk setiap PaymentMethod
         foreach ($paymentMethods as $paymentMethod) {
@@ -685,25 +739,32 @@ class BookingController extends Controller
             $totalRemainingPayment = Transaction::where('payment_method_remaining', $paymentMethod->id)
                 ->whereHas('booking', function ($query) use ($startDate, $endDate) {
                     $query->where('booking_status', '>=', 2)
-                        ->whereBetween('created_at', [$startDate, $endDate]);
+                        ->whereBetween('updated_at', [$startDate, $endDate]);
                 })->sum('remaining_payment');
 
             // Total untuk PaymentMethod saat ini
             $totals[$paymentMethod->name] = $totalDownPayment + $totalRemainingPayment;
+            $totalTransaction += $totalDownPayment + $totalRemainingPayment;
         }
 
         // Query transactions within date range
         $transactions = Transaction::join('bookings', 'transactions.booking_id', '=', 'bookings.id')
             ->join('field_data', 'bookings.field_data_id', '=', 'field_data.id')
             ->select('transactions.*')
-            ->whereHas('booking', function ($query) use ($startDate, $endDate) {
-                $query->where('booking_status', '>=', 2)
-                    ->whereBetween('created_at', [$startDate, $endDate]);
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->whereHas('booking', function ($query) {
+                    $query->where('bookings.booking_status', '>=', 2);
+                })
+                    ->where(function ($query) use ($startDate, $endDate) {
+                        $query->whereBetween('bookings.created_at', [$startDate, $endDate])
+                            ->orWhereBetween('bookings.updated_at', [$startDate, $endDate]);
+                    });
             })
             ->orderBy(DB::raw('(SELECT field_type FROM field_data WHERE id = bookings.field_data_id)'))
             ->orderBy(DB::raw('(SELECT name FROM field_data WHERE id = bookings.field_data_id)'))
             ->with('booking.fieldData')
             ->get();
+
 
         foreach ($transactions as $transaction) {
             // Mengambil down payment dari transaksi pertama
@@ -712,24 +773,52 @@ class BookingController extends Controller
             // Mengambil remaining payment dari transaksi pertama
             $remainingPayment = $transaction->remaining_payment;
 
-            // Menyimpan total pembayaran ke dalam atribut baru di dalam objek transaksi
-            $transaction->total_payment = $downPayment + $remainingPayment;
-        }
+            $dateStart = $startDate->format('Y-m-d');
+            $dateEnd = $endDate->format('Y-m-d');
 
-        $totalTransaction = 0;
-        // Menghitung total pembayaran untuk setiap transaksi
-        foreach ($transactions as $transaction) {
-            // Mengambil down payment dari transaksi pertama
-            $downPayment = $transaction->booking->transactions->first()->down_payment;
+            $forDP = $transaction->created_at->format('Y-m-d') == $dateStart &&  $transaction->created_at->format('Y-m-d') == $dateEnd;
+            $forRemaining = $transaction->updated_at->format('Y-m-d') == $dateStart &&  $transaction->updated_at->format('Y-m-d') == $dateEnd;
 
-            // Mengambil remaining payment dari transaksi pertama
-            $remainingPayment = $transaction->booking->transactions->first()->remaining_payment;
+            $createdAt = $transaction->created_at->format('Y-m-d');
+            $updatedAt = $transaction->updated_at->format('Y-m-d');
 
-            // Menyimpan total pembayaran ke dalam atribut baru di dalam objek transaksi
-            $transaction->total_payment = $downPayment + $remainingPayment;
-
-            // Menambahkan total pembayaran ke total transaksi keseluruhan
-            $totalTransaction += $transaction->total_payment;
+            if ($transaction->booking->booking_status == 2) {
+                $transaction->total_payment = $downPayment;
+                $transaction->status = 'Bayar DP';
+                $transaction->bg_color = 'primary';
+            } elseif ($transaction->booking->booking_status == 3) {
+                $transaction->total_payment = $downPayment;
+                $transaction->status = 'Batal';
+                $transaction->bg_color = 'secondary';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt != $updatedAt && $forDP) {
+                $transaction->total_payment = $downPayment;
+                $transaction->status = 'Bayar DP';
+                $transaction->bg_color = 'primary';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt != $updatedAt && $forRemaining) {
+                $transaction->total_payment = $remainingPayment;
+                $transaction->status = 'Pelunasan';
+                $transaction->bg_color = 'success';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt != $updatedAt && $dateStart != $dateEnd && $dateEnd == $createdAt) {
+                $transaction->total_payment = $downPayment;
+                $transaction->status = 'Bayar DP';
+                $transaction->bg_color = 'primary';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt != $updatedAt && $dateStart != $dateEnd && $dateStart == $updatedAt) {
+                $transaction->total_payment = $remainingPayment;
+                $transaction->status = 'Pelunasan';
+                $transaction->bg_color = 'success';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt != $updatedAt && $dateStart != $dateEnd) {
+                $transaction->total_payment = $downPayment + $remainingPayment;
+                $transaction->status = 'Lunas';
+                $transaction->bg_color = 'success';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt == $updatedAt && $dateStart == $dateEnd) {
+                $transaction->total_payment = $downPayment + $remainingPayment;
+                $transaction->status = 'Pembayaran Lunas';
+                $transaction->bg_color = 'success';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt == $updatedAt && $dateStart != $dateEnd) {
+                $transaction->total_payment = $downPayment + $remainingPayment;
+                $transaction->status = 'Lunas';
+                $transaction->bg_color = 'success';
+            }
         }
 
         return response()->json(
@@ -751,6 +840,7 @@ class BookingController extends Controller
 
         // Array untuk menyimpan total untuk setiap PaymentMethod
         $totals = [];
+        $totalTransaction = 0;
 
         // Menghitung total down_payment dan remaining_payment untuk setiap PaymentMethod
         foreach ($paymentMethods as $paymentMethod) {
@@ -765,39 +855,86 @@ class BookingController extends Controller
             $totalRemainingPayment = Transaction::where('payment_method_remaining', $paymentMethod->id)
                 ->whereHas('booking', function ($query) use ($startDate, $endDate) {
                     $query->where('booking_status', '>=', 2)
-                        ->whereBetween('created_at', [$startDate, $endDate]);
+                        ->whereBetween('updated_at', [$startDate, $endDate]);
                 })->sum('remaining_payment');
 
             // Total untuk PaymentMethod saat ini
             $totals[$paymentMethod->name] = $totalDownPayment + $totalRemainingPayment;
+            $totalTransaction += $totalDownPayment + $totalRemainingPayment;
         }
 
+        // Query transactions within date range
         $transactions = Transaction::join('bookings', 'transactions.booking_id', '=', 'bookings.id')
             ->join('field_data', 'bookings.field_data_id', '=', 'field_data.id')
             ->select('transactions.*')
-            ->whereHas('booking', function ($query) use ($startDate, $endDate) {
-                $query->where('booking_status', '>=', 2)
-                    ->whereBetween('created_at', [$startDate, $endDate]);
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->whereHas('booking', function ($query) {
+                    $query->where('bookings.booking_status', '>=', 2);
+                })
+                    ->where(function ($query) use ($startDate, $endDate) {
+                        $query->whereBetween('bookings.created_at', [$startDate, $endDate])
+                            ->orWhereBetween('bookings.updated_at', [$startDate, $endDate]);
+                    });
             })
             ->orderBy(DB::raw('(SELECT field_type FROM field_data WHERE id = bookings.field_data_id)'))
             ->orderBy(DB::raw('(SELECT name FROM field_data WHERE id = bookings.field_data_id)'))
             ->with('booking.fieldData')
             ->get();
 
-        $totalTransaction = 0;
-        // Menghitung total pembayaran untuk setiap transaksi
+
         foreach ($transactions as $transaction) {
             // Mengambil down payment dari transaksi pertama
-            $downPayment = $transaction->booking->transactions->first()->down_payment;
+            $downPayment = $transaction->down_payment;
 
             // Mengambil remaining payment dari transaksi pertama
-            $remainingPayment = $transaction->booking->transactions->first()->remaining_payment;
+            $remainingPayment = $transaction->remaining_payment;
 
-            // Menyimpan total pembayaran ke dalam atribut baru di dalam objek transaksi
-            $transaction->total_payment = $downPayment + $remainingPayment;
+            $dateStart = $startDate->format('Y-m-d');
+            $dateEnd = $endDate->format('Y-m-d');
 
-            // Menambahkan total pembayaran ke total transaksi keseluruhan
-            $totalTransaction += $transaction->total_payment;
+            $forDP = $transaction->created_at->format('Y-m-d') == $dateStart &&  $transaction->created_at->format('Y-m-d') == $dateEnd;
+            $forRemaining = $transaction->updated_at->format('Y-m-d') == $dateStart &&  $transaction->updated_at->format('Y-m-d') == $dateEnd;
+
+            $createdAt = $transaction->created_at->format('Y-m-d');
+            $updatedAt = $transaction->updated_at->format('Y-m-d');
+
+            if ($transaction->booking->booking_status == 2) {
+                $transaction->total_payment = $downPayment;
+                $transaction->status = 'Bayar DP';
+                $transaction->bg_color = 'primary';
+            } elseif ($transaction->booking->booking_status == 3) {
+                $transaction->total_payment = $downPayment;
+                $transaction->status = 'Batal';
+                $transaction->bg_color = 'secondary';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt != $updatedAt && $forDP) {
+                $transaction->total_payment = $downPayment;
+                $transaction->status = 'Bayar DP';
+                $transaction->bg_color = 'primary';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt != $updatedAt && $forRemaining) {
+                $transaction->total_payment = $remainingPayment;
+                $transaction->status = 'Pelunasan';
+                $transaction->bg_color = 'success';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt != $updatedAt && $dateStart != $dateEnd && $dateEnd == $createdAt) {
+                $transaction->total_payment = $downPayment;
+                $transaction->status = 'Bayar DP';
+                $transaction->bg_color = 'primary';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt != $updatedAt && $dateStart != $dateEnd && $dateStart == $updatedAt) {
+                $transaction->total_payment = $remainingPayment;
+                $transaction->status = 'Pelunasan';
+                $transaction->bg_color = 'success';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt != $updatedAt && $dateStart != $dateEnd) {
+                $transaction->total_payment = $downPayment + $remainingPayment;
+                $transaction->status = 'Lunas';
+                $transaction->bg_color = 'success';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt == $updatedAt && $dateStart == $dateEnd) {
+                $transaction->total_payment = $downPayment + $remainingPayment;
+                $transaction->status = 'Pembayaran Lunas';
+                $transaction->bg_color = 'success';
+            } elseif ($transaction->booking->booking_status == 4 && $createdAt == $updatedAt && $dateStart != $dateEnd) {
+                $transaction->total_payment = $downPayment + $remainingPayment;
+                $transaction->status = 'Lunas';
+                $transaction->bg_color = 'success';
+            }
         }
 
         // Load view template
@@ -817,7 +954,17 @@ class BookingController extends Controller
         // Render PDF (optional: save to file)
         $dompdf->render();
 
+        // Set PDF filename
+        $dateStart = $startDate->format('Y-m-d');
+        $dateEnd = $endDate->format('Y-m-d');
+        $fileName = 'transaction' . $startDate->format('Ymd');
+        if ($dateStart == $dateEnd) {
+            $fileName .= '.pdf';
+        } else {
+            $fileName .= '-' . $endDate->format('Ymd') . '.pdf';
+        }
+
         // Output PDF to browser
-        return $dompdf->stream('transactions.pdf');
+        return $dompdf->stream($fileName);
     }
 }

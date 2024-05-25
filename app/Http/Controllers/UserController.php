@@ -67,7 +67,7 @@ class UserController extends Controller
         if (!$user) {
             return view('admin.404');
         }
-        
+
         return view('admin.users.edit', compact('user', 'roles'));
     }
 
@@ -78,6 +78,7 @@ class UserController extends Controller
             'username' => 'required|unique:users,username,' . $id,
             'email' => 'required|email|unique:users,email,' . $id,
             'password' => 'nullable|min:6',
+            'phone' => 'required|numeric|digits_between:10,13',
             'role' => 'required',
         ], [
             'name.required' => 'Nama lengkap harus diisi',
@@ -87,6 +88,9 @@ class UserController extends Controller
             'email.email' => 'Email harus berupa email',
             'email.unique' => 'Email sudah terdaftar',
             'password.min' => 'Password minimal 6 karakter',
+            'phone.required' => 'Nomor telepon harus diisi',
+            'phone.numeric' => 'Nomor telepon harus berupa angka',
+            'phone.digits_between' => 'Nomor telepon harus 10-13 angka',
             'role.required' => 'Role harus dipilih',
         ]);
 
@@ -116,11 +120,24 @@ class UserController extends Controller
     public function destroy($id)
     {
         $user = User::find($id);
+        $usedInTransaction = $user->transactions()->exists();
+
         if ($user) {
-            $user->delete();
-            session()->flash('success', 'Data user berhasil dihapus');
-            return redirect()->route('admin.userIndex');
+            // Memeriksa apakah ID pengguna adalah 1 (ID admin)
+            if ($user->id === 1) {
+                // Jika ID pengguna adalah 1, kembalikan pesan kesalahan
+                return redirect()->back()->with('error', 'Pengguna pertama tidak bisa dihapus.');
+            } elseif ($usedInTransaction) {
+                session()->flash('error', 'Pengguna tidak bisa dihapus karena sudah pernah melakukan transaksi.');
+                return back();
+            } else {
+                // Jika bukan admin, hapus pengguna dan tampilkan pesan sukses
+                $user->delete();
+                session()->flash('success', 'Data user berhasil dihapus');
+                return redirect()->route('admin.userIndex');
+            }
         } else {
+            // Jika pengguna tidak ditemukan, kembalikan pesan kesalahan
             return redirect()->back()->with('error', 'User not found.');
         }
     }

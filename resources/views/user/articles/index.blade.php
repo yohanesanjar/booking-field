@@ -26,7 +26,7 @@
                                     <img style="height: 250px; width: 100%" src="{{ asset('storage/' . $post->thumbnail) }}"
                                         class="card-img-top" alt="{{ $post->title }}">
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6 text-start">
                                     <h3 class="card-title">{{ $post->title }}</h3>
                                     <p class="card-text">{!! Str::limit($post->description, 400) !!}</p>
                                     <p class="card-text"><small class="text-body-secondary">Posted By:

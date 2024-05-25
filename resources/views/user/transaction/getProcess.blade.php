@@ -1,7 +1,7 @@
 @extends('user.layouts.main')
 
 @section('content')
-    <section class="py-3" style="background-color: #eee;">
+    <section class="pt-5 pb-4" style="background-color: #eee;">
         <div class="container">
             <div class="row d-flex justify-content-center">
                 <div class="col-md-12 col-lg-10 col-xl-8">

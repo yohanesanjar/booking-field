@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Tambah Data User</h1>
+        <h1 class="h3 mb-0 text-gray-800">Edit Data User</h1>
     </div>
     <div class="row">
         <div class="col-md-12">
@@ -29,6 +29,17 @@
                             <input type="text" id="username" name="username" value="{{ $user->username }}"
                                 placeholder="Masukkan Username">
                             @error('username')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="row justify-content-between text-left">
+                        <div class="form-group col-12 flex-column d-flex">
+                            <label class="form-control-label">No. HP<span class="text-danger"> *</span>
+                            </label>
+                            <input type="number" id="phone" name="phone" value="{{ ($user->phone) }}"
+                                placeholder="Masukkan phone" min="0">
+                            @error('phone')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
@@ -67,16 +78,6 @@
                                 @endforeach
                             </select>
                             @error('role')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="row justify-content-between text-left">
-                        <div class="form-group col-12 flex-column d-flex">
-                            <label class="form-control-label">Thumbnail<span class="text-danger"> *</span>
-                            </label>
-                            <input class="form-control" type="file" name="thumbnail" id="thumbnail">
-                            @error('thumbnail')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>

@@ -10,6 +10,12 @@
             <button type="button" class="btn-close flex-end" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
+    @if (session('error'))
+        <div class="alert alert-danger d-flex justify-content-between align-items-center">
+            {{ session('error') }}
+            <button type="button" class="btn-close flex-end" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
     <div class="py-3">
         <a href="{{ route('admin.userCreate') }}" class="btn btn-primary">Tambah</a>
     </div>
@@ -24,6 +30,7 @@
                         <th class="text-center">#</th>
                         <th class="text-center">Nama</th>
                         <th class="text-center">Email</th>
+                        <th class="text-center">No. HP</th>
                         <th class="text-center">Username</th>
                         <th class="text-center">Role</th>
                         <th class="text-center">aksi</th>
@@ -35,84 +42,15 @@
                             <td class="text-center">{{ $loop->iteration }}</td>
                                 <td class="text-center">{{ $user->name }}</td>
                                 <td class="text-center">{{ $user->email }}</td>
+                                <td class="text-center">{{ $user->phone }}</td>
                                 <td class="text-center">{{ $user->username }}</td>
                                 <td class="text-center">{{ $user->role->name }}</td>
                                 <td class="text-center">
-                                    <div class="d-flex justify-content-center gap-1">
-                                        <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                            data-bs-target="#detailModal{{ $user->id }} "><i class="fa fa-eye"></i></a>
-    
-                                        {{-- Modal --}}
-                                        <div class="modal fade" id="detailModal{{ $user->id }}" tabindex="-1"
-                                            aria-labelledby="detailModal{{ $user->id }}" aria-hidden="true">
-                                            <div class="modal-dialog modal-lg">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h1 class="modal-title fs-5" id="detailModal{{ $user->id }}">Data
-                                                            Lapangan</h1>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                            aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <div class="row mb-2">
-                                                            <div class="col text-start">
-                                                                <label for="message-text" class="col-label">Nama:</label>
-                                                                <p>p</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row mb-2">
-                                                            <div class="col text-start">
-                                                                <label for="message-text" class="col-label">Deskripsi
-                                                                    Lapangan:</label>
-                                                                <p>p</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row mb-2 text-start">
-                                                            <div class="col-4">
-                                                                <label for="message-text" class="col-label">Jenis
-                                                                    Lapangan:</label>
-                                                                <p>p</p>
-                                                            </div>
-                                                            <div class="col-4">
-                                                                <label for="message-text" class="col-label">Material
-                                                                    Lapangan:</label>
-                                                                <p>p</p>
-                                                            </div>
-                                                            <div class="col-4">
-                                                                <label for="message-text" class="col-label">Lokasi
-                                                                    Lapangan:</label>
-                                                                <p>p</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row mb-2">
-                                                            <div class="col text-start">
-                                                                <label for="message-text" class="col-label">Harga Jam Pagi:</label>
-                                                                <p>p</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row mb-2">
-                                                            <div class="col text-start">
-                                                                <label for="message-text" class="col-label">Harga Jam Malam:</label>
-                                                                <p>p</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-    
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary"
-                                                            data-bs-dismiss="modal">Close</button>
-                                                        <a href="{{ route('admin.fieldEdit', $user->id) }}"
-                                                            class="btn btn-warning">Edit</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-    
+                                    <div class="d-flex justify-content-center gap-1">    
                                         <a href="{{ route('admin.userEdit', $user->id) }}" data-bs-toggle="tooltip"
                                             data-bs-placement="top" data-bs-title="Edit" class="btn btn-sm btn-warning"><i
                                                 class="fa fa-edit"></i>
-                                        </a>
-    
+                                        </a>    
                                         <form class="deleteForm" action="{{ route('admin.userDelete', $user->id) }}"
                                             method="POST">
                                             @csrf

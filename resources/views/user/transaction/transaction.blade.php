@@ -1,9 +1,7 @@
 @extends('user.layouts.main')
 
 @section('content')
-    <div class="container py-3">
-        {{-- @dd($bookingData) --}}
-        <!-- Content Row -->
+    <div class="container pt-5 pb-4">
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
@@ -51,7 +49,8 @@
                                                         @endphp
                                                     @endif
                                                 </td>
-                                                <td class="text-center">{{ $data['start_time'] }} - {{ $data['end_time'] }}
+                                                <td class="text-center">{{ $data['start_time'] }} -
+                                                    {{ $data['end_time'] }}
                                                 </td>
                                                 <td class="text-center">Rp
                                                     {{ number_format($data['sub_total'], 0, ',', '.') }}
@@ -144,4 +143,15 @@
             priceInput2.value = priceInput2.value.replace(/[^0-9]/g, '');
         }
     </script>
+    @if (session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'error',
+                text: '{{ session('error') }}',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        </script>
+    @endif
 @endsection

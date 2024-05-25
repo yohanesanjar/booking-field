@@ -34,7 +34,7 @@
     <link href="{{ asset('userLib2/css/styles.css') }}" rel="stylesheet">
 
     <!-- Favicon  -->
-    <link rel="icon" href="{{ asset('userLib2/images/favicon.png') }}">
+    <link rel="icon" href="{{ asset('img/JAS_NoBg.png') }}">
 
 </head>
 

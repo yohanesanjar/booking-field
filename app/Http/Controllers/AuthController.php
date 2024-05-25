@@ -45,7 +45,7 @@ class AuthController extends Controller
             'name' => 'required',
             'username' => 'required|unique:users',
             'email' => 'required|email|unique:users',
-            'password' => 'required',
+            'password' => 'required|min:6',
             'phone' => 'required|numeric|digits_between:10,13',
         ], [
             'name.required' => 'Nama lengkap harus diisi',
@@ -55,6 +55,7 @@ class AuthController extends Controller
             'email.email' => 'Email harus berupa email',
             'email.unique' => 'Email sudah terdaftar',
             'password.required' => 'Password harus diisi',
+            'password.min' => 'Password minimal 6 karakter',
             'phone.required' => 'Nomor telepon harus diisi',
             'phone.numeric' => 'Nomor telepon harus berupa angka',
             'phone.digits_between' => 'Nomor telepon harus 10-13 angka',

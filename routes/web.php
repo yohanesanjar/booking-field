@@ -26,6 +26,10 @@ use App\Http\Controllers\PaymentMethodController;
 */
 
 Route::get('/', [AuthController::class, 'index'])->name('index');
+Route::get('/storage-link', function () {
+    \Illuminate\Support\Facades\Artisan::call('storage:link');
+    dd('storage link');
+});
 
 Route::get('/register', [AuthController::class, 'registerView'])->name('register');
 Route::get('/login', [AuthController::class, 'loginView'])->name('login');

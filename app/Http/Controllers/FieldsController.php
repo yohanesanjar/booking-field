@@ -140,6 +140,12 @@ class FieldsController extends Controller
             return redirect()->back();
         }
 
+        $fieldDataUsed = $fieldData->bookings()->exists();
+        if($fieldDataUsed){
+            session()->flash('error', 'Data lapangan telah digunakan');
+            return redirect()->back();
+        }
+
         // Hapus file gambar dari penyimpanan
         Storage::disk('public')->delete($fieldData->thumbnail);
 
@@ -174,11 +180,18 @@ class FieldsController extends Controller
     {
         $scheduleAvailable = ScheduleAvailability::with(['booking', 'fieldData', 'fieldSchedule'])
             ->whereHas('booking', function ($query) {
-                $query->where('is_member', 0);
+                $query->where(function ($query) {
+                    $query->where('is_member', 0)
+                        ->orWhere(function ($query) {
+                            $query->where('is_member', 1)
+                                ->where('booking_status', 0);
+                        });
+                });
             })
             ->orderBy('id', 'desc')
-            ->latest() // Jika id adalah timestamp Unix, Anda bisa menggunakan metode latest()
+            ->latest()
             ->get();
+
         return view('admin.fields.schedule.scheduleActive', compact('scheduleAvailable'));
     }
 

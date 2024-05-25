@@ -10,6 +10,12 @@
             <button type="button" class="btn-close flex-end" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
+    @if (session('error'))
+        <div class="alert alert-danger d-flex justify-content-between align-items-center">
+            {{ session('error') }}
+            <button type="button" class="btn-close flex-end" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
     <div class="py-3">
         <a href="{{ route('admin.fieldCreate') }}" class="btn btn-primary">Tambah</a>
     </div>

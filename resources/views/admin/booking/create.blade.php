@@ -94,92 +94,9 @@
                     <hr style="border-top: 2px solid #000;">
                     <div class="row justify-content-end py-4 px-4">
                         <div class="form-group col-sm-2">
-                            {{-- <button type="button" class="btn-block btn-primary" data-bs-toggle="modal"
-                                data-bs-target="#exampleModal" data-bs-whatever="@mdo">Create</button> --}}
                             <button type="submit" class="btn-block btn-primary">Create</button>
                         </div>
                     </div>
-                    {{-- <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                        aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="exampleModalLabel">Transaksi</h1>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <div class="row justify-content-between text-left py-4" style="display: none;"
-                                            id="transaksi">
-                                            <table class="table">
-                                                <thead>
-                                                    <tr>
-                                                        <th scope="col">Nama Lapangan</th>
-                                                        <th scope="col">Jadwal</th>
-                                                        <th scope="col">Sub Total</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="discount" class="form-control-label">Diskon</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">Rp</span>
-                                            <input type="text" id="discount" name="discount" class="form-control"
-                                                placeholder="Masukkan Jumlah Diskon" oninput="formatCurrency(this)">
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-control-label">Jenis Pembayaran<span class="text-danger">
-                                                *</span></label>
-                                        <select class="form-select @error('payment_method') is-invalid @enderror"
-                                            aria-label="payment_method" id="payment_method" name="payment_method">
-                                            <option selected disabled>- Pilih jenis pembayaran -</option>
-                                            @foreach ($paymentMethods as $pm)
-                                                <option value="{{ $pm->id }}"
-                                                    {{ old('payment_method') == $pm->name ? 'selected' : '' }}>
-                                                    {{ $pm->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        @error('payment_method')
-                                            <span class="text-danger">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="account_name" class="form-control-label">Nama Pengirim<span
-                                                class="text-danger">
-                                                *</span></label>
-                                        <input type="text" id="account_name" name="account_name"
-                                            class="form-control">
-                                        @error('account_name')
-                                            <span class="text-danger">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="payment_proof">Bukti Pembayaran<span class="text-danger">
-                                                *</span></label>
-                                        <input class="form-control" type="file" name="payment_proof"
-                                            id="payment_proof" onchange="previewPaymentProof(this)">
-                                        <img id="payment-proof-preview" class="py-4"
-                                            src="{{ asset('storage/' . $fieldData->thumbnail) }}" alt="Current Thumbnail"
-                                            style="width: 100px;">
-                                        @error('payment_proof')
-                                            <span class="text-danger">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">Close</button>
-                                    <button type="submit" class="btn btn-primary">Book Now</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div> --}}
                 </form>
             </div>
         </div>

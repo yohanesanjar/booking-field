@@ -1,8 +1,8 @@
 @extends('user.layouts.main')
 
 @section('content')
-    <div class="container">
-        <div class="card border-0 shadow-lg my-5" style="max-width: 400px; margin: 0 auto;">
+    <div class="container py-3">
+        <div class="card border-0 shadow-lg mt-5 mb-3" style="max-width: 400px; margin: 0 auto;">
             <!-- Nested Row within Card Body -->
             <div class="row">
                 <div class="col-md-12 mx-auto">

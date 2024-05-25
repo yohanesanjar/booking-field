@@ -23,8 +23,8 @@
                 <td>Periode</td>
                 <td>:</td>
                 @php
-                    $startDate = \Carbon\Carbon::parse($startDate)->format('l, d/m/Y');
-                    $endDate = \Carbon\Carbon::parse($endDate)->format('l, d/m/Y');
+                    $startDate = \Carbon\Carbon::parse($startDate)->translatedFormat('l, d/m/Y');
+                    $endDate = \Carbon\Carbon::parse($endDate)->translatedFormat('l, d/m/Y');
                 @endphp
                 @if ($startDate == $endDate)
                     <td>{{ $startDate }}</td>
@@ -45,7 +45,9 @@
                         <th class="text-center">Tanggal Transaksi</th>
                         <th class="text-center">Nama Lapangan</th>
                         <th class="text-center">Jenis Lapangan</th>
-                        <th class="text-center">Total Pembayaran</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Total Transaksi</th>
+                        <th class="text-center">Pembayaran Berhasil</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -54,15 +56,18 @@
                             <td class="text-center">{{ $transaction->id }}</td>
                             <td class="text-center">{{ $transaction->booking_id }}</td>
                             <td class="text-center">{{ $transaction->booking->customer_name }}</td>
-                            <td class="text-center">{{ \Carbon\Carbon::parse($transaction->created_at)->format('l, d/m/Y') }}</td>
+                            <td class="text-center">{{ \Carbon\Carbon::parse($transaction->created_at)->translatedFormat('l, d/m/Y') }}</td>
                             <td class="text-center">{{ $transaction->booking->fieldData->name }}</td>
                             <td class="text-center">{{ $transaction->booking->fieldData->field_type }}</td>
+                            <td class="text-center">{{ $transaction->status }}</td>
+                            <td class="text-center">Rp. {{ number_format($transaction->booking->total_subtotal, 0, ',', '.') }}
+                            </td>
                             <td class="text-center">Rp. {{ number_format($transaction->total_payment, 0, ',', '.') }}
                             </td>
                         </tr>
                     @endforeach
                     <tr>
-                        <td class="text-center" colspan="6"><strong>Total</strong></td>
+                        <td class="text-center" colspan="8"><strong>Total</strong></td>
                         <td class="text-center"><strong>Rp.
                                 {{ number_format($totalTransaction, 0, ',', '.') }}</strong>
                     </tr>

@@ -4,6 +4,12 @@
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Transaksi</h1>
     </div>
+    @if (session('error'))
+        <div class="alert alert-danger d-flex justify-content-between align-items-center">
+            {{ session('error') }}
+            <button type="button" class="btn-close flex-end" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
     <!-- Content Row -->
     <div class="row">
         <div class="col-md-12">
