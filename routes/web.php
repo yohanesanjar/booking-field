@@ -1,8 +1,5 @@
 <?php
 
-use App\Models\Post;
-use App\Models\User;
-use App\Models\Transaction;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;

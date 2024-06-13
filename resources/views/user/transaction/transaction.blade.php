@@ -84,7 +84,7 @@
                                     <label for="down_payment" class="form-control-label">Uang Muka</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
-                                        <input type="number" id="down_payment" name="down_payment" class="form-control"
+                                        <input type="text" id="down_payment" name="down_payment" class="form-control"
                                             placeholder="Masukkan Jumlah Uang Muka" oninput="formatCurrency(this)">
                                     </div>
                                     @error('down_payment')

@@ -28,7 +28,7 @@
 
                                 $date = $transaction->created_at;
                                 $day = translateDay($date->format('l'));
-                                $dateFormatted = $day . ', ' . $date->format('j F Y');
+                                $dateFormatted = $day . ', ' . $date->translatedFormat('j F Y');
                             @endphp
                             <h5>{{ $dateFormatted }}</h5>
                         </div>

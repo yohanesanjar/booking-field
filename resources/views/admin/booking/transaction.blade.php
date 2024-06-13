@@ -73,7 +73,7 @@
                                         </tr>
                                         <tr>
                                             <td class="text-center" colspan="2">Diskon Member</td>
-                                            <td>Rp. {{ number_format($bookingData['discount'], 0, ',', '.') }}</td>
+                                            <td class="text-center">Rp. {{ number_format($bookingData['discount'], 0, ',', '.') }}</td>
                                         </tr>
                                     @endif
                                     <tr>

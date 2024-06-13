@@ -240,7 +240,7 @@
 
                         $('#paymentMethods').empty();
                         $.each(response.totals, function(paymentMethodName, totalAmount) {
-                            var formattedTotal = 'Rp ' + Number(totalAmount).toLocaleString(
+                            var formattedTotal = 'Rp. ' + Number(totalAmount).toLocaleString(
                                 'id-ID', {
                                     minimumFractionDigits: 0
                                 });
@@ -268,7 +268,7 @@
                         });
 
                         $('#totalTransaction').empty();
-                        var formattedTotalTransaction = 'Rp ' + Number(response.totalTransaction)
+                        var formattedTotalTransaction = 'Rp. ' + Number(response.totalTransaction)
                             .toLocaleString(
                                 'id-ID', {
                                     minimumFractionDigits: 0

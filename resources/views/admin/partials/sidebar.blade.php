@@ -41,8 +41,8 @@
                 <div class="bg-white py-2 collapse-inner rounded">
                     <a class="collapse-item {{ request()->routeIs('admin.fieldIndex') ? 'active' : '' }}"
                         href="{{ route('admin.fieldIndex') }}">Lapangan</a>
-                    <a class="collapse-item {{ request()->routeIs('admin.scheduleIndex') ? 'active' : '' }}"
-                        href="{{ route('admin.scheduleIndex') }}">Jadwal Lapangan</a>
+                    {{-- <a class="collapse-item {{ request()->routeIs('admin.scheduleIndex') ? 'active' : '' }}"
+                        href="{{ route('admin.scheduleIndex') }}">Jadwal Lapangan</a> --}}
                     <a class="collapse-item {{ request()->routeIs('admin.scheduleActiveIndex') ? 'active' : '' }}"
                         href="{{ route('admin.scheduleActiveIndex') }}">Jadwal Ketersediaan</a>
                 </div>
@@ -84,12 +84,12 @@
                 <span>Postingan</span>
             </a>
         </li>
-        <li class="nav-item {{ request()->routeIs('admin.indexData') ? 'active' : '' }}">
+        {{-- <li class="nav-item {{ request()->routeIs('admin.indexData') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.indexData') }}">
                 <i class="fas fa-fw fa-info-circle"></i>
                 <span>Pengaturan Data</span>
             </a>
-        </li>
+        </li> --}}
     @endif
 
     <!-- Sidebar Toggler (Sidebar) -->

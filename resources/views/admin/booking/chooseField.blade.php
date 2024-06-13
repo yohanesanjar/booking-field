@@ -109,8 +109,8 @@
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary"
                                                         data-bs-dismiss="modal">Close</button>
-                                                    <a href="{{ route('admin.fieldEdit', $data->id) }}"
-                                                        class="btn btn-warning">Edit</a>
+                                                    {{-- <a href="{{ route('admin.fieldEdit', $data->id) }}"
+                                                        class="btn btn-warning">Edit</a> --}}
                                                 </div>
                                             </div>
                                         </div>
@@ -118,7 +118,7 @@
 
                                     <a href="{{ route('admin.bookingCreate', $data->id) }}" data-bs-toggle="tooltip"
                                         data-bs-placement="top" data-bs-title="Edit"
-                                        class="btn btn-sm btn-warning">pilih</i>
+                                        class="btn btn-sm btn-success">pilih</i>
                                     </a>
                                 </div>
                             </td>

@@ -94,7 +94,7 @@
                             <label class="form-control-label">Harga Jam Pagi<span class="text-danger"> *</span></label>
                             <div class="input-group">
                                 <span class="input-group-text">Rp</span>
-                                <input type="number" id="morning_price"
+                                <input type="text" id="morning_price"
                                     value="{{ number_format($fieldData->morning_price, 0, ',', '.') }}" name="morning_price"
                                     class="form-control" placeholder="Masukkan Harga" oninput="formatCurrency(this)">
                             </div>
@@ -108,7 +108,7 @@
                             <label class="form-control-label">Harga Jam Malam<span class="text-danger"> *</span></label>
                             <div class="input-group">
                                 <span class="input-group-text">Rp</span>
-                                <input type="number" id="night_price"
+                                <input type="text" id="night_price"
                                     value="{{ number_format($fieldData->night_price, 0, ',', '.') }}" name="night_price"
                                     class="form-control" placeholder="Masukkan Harga" oninput="formatCurrency(this)">
                             </div>

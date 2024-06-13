@@ -44,7 +44,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <button class="btn btn-lg btn-primary ms-3" data-bs-container="body"
+                                    <button type="button" class="btn btn-lg btn-primary ms-3" data-bs-container="body"
                                         data-bs-toggle="popover" data-bs-placement="top" data-bs-content="Copied"
                                         onclick="copyToClipboard()">Copy</button>
                                 </div>
